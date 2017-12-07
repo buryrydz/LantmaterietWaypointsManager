@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 import '../scss/map.scss';
 
 proj4.defs('EPSG:3006', '+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +axis=neu +no_defs');
-
+let name = 'Marek';
 export default class Map extends Component {
     constructor(props) {
         super(props);
