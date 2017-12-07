@@ -44,8 +44,8 @@ export default class Map extends Component {
               })
         });
 
-        var styleFunction = function(feature, resolution) {
-            var featureStyleFunction = feature.getStyleFunction();
+        const styleFunction = function(feature, resolution) {
+            const featureStyleFunction = feature.getStyleFunction();
             if (featureStyleFunction) {
                 return featureStyleFunction.call(feature, resolution);
             } else {
