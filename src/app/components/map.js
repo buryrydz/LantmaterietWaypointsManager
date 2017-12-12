@@ -1,13 +1,12 @@
 import React, {Component} from 'react';
 import '../scss/map.scss';
 
+// In order to work with EPSG:3006 coordinate reference system
 proj4.defs('EPSG:3006', '+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +axis=neu +no_defs');
 
 export default class Map extends Component {
     constructor(props) {
         super(props);
-
-        // this.map = null;
     }
 
     componentDidMount() {
@@ -44,15 +43,6 @@ export default class Map extends Component {
               })
         });
 
-        const styleFunction = function(feature, resolution) {
-            const featureStyleFunction = feature.getStyleFunction();
-            if (featureStyleFunction) {
-                return featureStyleFunction.call(feature, resolution);
-            } else {
-                return defaultStyle[feature.getGeometry().getType()];
-            }
-        };
-
         const dragAndDropInteraction = new ol.interaction.DragAndDrop({
             formatConstructors: [
                 ol.format.GPX,
@@ -81,7 +71,6 @@ export default class Map extends Component {
                 resolutions : resolutions
             })
         });
-        // this.map = map;
           
         const zoomslider = new ol.control.ZoomSlider();
         map.addControl(zoomslider);
@@ -90,11 +79,82 @@ export default class Map extends Component {
             const vectorSource = new ol.source.Vector({
                 features: event.features
             });
-            map.addLayer(new ol.layer.Vector({
-                source: vectorSource,
-                style: styleFunction
-            }));
-            map.getView().fit(vectorSource.getExtent());
+            const vectorLayer = new ol.layer.Vector({
+                source: vectorSource
+            }); 
+            map.addLayer(vectorLayer);
+
+            vectorSource.getFeatures().map(feature => {
+                // console.log(feature.getProperties());
+                const style = new ol.style.Style({
+                    text: new ol.style.Text({
+                        text: ""
+                    }),
+                    image: new ol.style.Circle({
+                        radius: 5,
+                        fill: new ol.style.Fill({
+                          color: 'BlueViolet'
+                        })
+                      })
+                });
+                feature.setStyle(style);
+            })
+            // map.getView().fit(vectorSource.getExtent());
+        });
+
+        let highlight;
+        const displayFeatureInfo = function(pixel) {
+            const feature = map.forEachFeatureAtPixel(pixel, function (feature) {
+                return feature;
+            });
+
+            if (feature !== highlight) {
+                if (highlight) {
+                    const style = new ol.style.Style({
+                        text: new ol.style.Text({
+                            text: ""
+                        }),
+                        image: new ol.style.Circle({
+                            radius: 2,
+                            fill: new ol.style.Fill({
+                              color: 'Blue'
+                            })
+                          })
+                    });
+                    highlight.setStyle(style);
+                }
+                if (feature) {
+                    const style = new ol.style.Style({
+                        text: new ol.style.Text({
+                            font: '12px Calibri,sans-serif',
+                            text: 'text',
+                            fill: new ol.style.Fill({
+                                color: '#000'
+                            }),
+                            stroke: new ol.style.Stroke({
+                                color: '#f00',
+                                width: 3
+                            })
+                        }),
+                        image: new ol.style.Circle({
+                            radius: 5,
+                            fill: new ol.style.Fill({
+                              color: 'Red'
+                            })
+                          })
+                    });
+                    feature.setStyle(style);
+                }
+                highlight = feature;
+            }
+        };
+    
+        map.on('pointermove', function(evt) {
+            if (evt.dragging) {
+                return;
+            }
+            const pixel = evt.pixel;
+            displayFeatureInfo(pixel);
         });
     }
 
