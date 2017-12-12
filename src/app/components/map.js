@@ -115,25 +115,27 @@ export default class Map extends Component {
                             text: ""
                         }),
                         image: new ol.style.Circle({
-                            radius: 2,
+                            radius: 5,
                             fill: new ol.style.Fill({
                               color: 'Blue'
                             })
-                          })
+                        })
                     });
                     highlight.setStyle(style);
                 }
                 if (feature) {
                     const style = new ol.style.Style({
                         text: new ol.style.Text({
-                            font: '12px Calibri,sans-serif',
-                            text: 'text',
+                            font: '15px Calibri,sans-serif',
+                            offsetX: 15,
+                            offsetY: -8,
+                            text: feature.get('name'),
                             fill: new ol.style.Fill({
-                                color: '#000'
+                                color: '#fff'
                             }),
                             stroke: new ol.style.Stroke({
                                 color: '#f00',
-                                width: 3
+                                width: 2
                             })
                         }),
                         image: new ol.style.Circle({
@@ -141,7 +143,7 @@ export default class Map extends Component {
                             fill: new ol.style.Fill({
                               color: 'Red'
                             })
-                          })
+                        })
                     });
                     feature.setStyle(style);
                 }
