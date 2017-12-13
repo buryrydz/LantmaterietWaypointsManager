@@ -58,9 +58,17 @@ export default class Map extends Component {
             pinchRotate : false
         });
 
+        // Create vector layer for waypoints
+        const vectorSource = new ol.source.Vector({
+        });
+        const vectorLayer = new ol.layer.Vector({
+            source: vectorSource
+        }); 
+
+        // Create map
         const map = new ol.Map({
             target : 'map',
-            layers : [ wmts ],
+            layers : [ wmts, vectorLayer ],
             logo : false,
             interactions : interactions.extend([dragAndDropInteraction]),
             view : new ol.View({
@@ -72,18 +80,14 @@ export default class Map extends Component {
             })
         });
           
-        const zoomslider = new ol.control.ZoomSlider();
-        map.addControl(zoomslider);
+        const zoomSlider = new ol.control.ZoomSlider();
+        map.addControl(zoomSlider);
+
+        const scaleLine = new ol.control.ScaleLine();
+        map.addControl(scaleLine);
 
         dragAndDropInteraction.on('addfeatures', function(event) {
-            const vectorSource = new ol.source.Vector({
-                features: event.features
-            });
-            const vectorLayer = new ol.layer.Vector({
-                source: vectorSource
-            }); 
-            map.addLayer(vectorLayer);
-
+            vectorSource.addFeatures(event.features);
             vectorSource.getFeatures().map(feature => {
                 // console.log(feature.getProperties());
                 const style = new ol.style.Style({
@@ -102,62 +106,57 @@ export default class Map extends Component {
             // map.getView().fit(vectorSource.getExtent());
         });
 
-        let highlight;
-        const displayFeatureInfo = function(pixel) {
-            const feature = map.forEachFeatureAtPixel(pixel, function (feature) {
-                return feature;
-            });
+        // Add additional interactions   
+        let styleCache;
+        const styleFunction = function(feature, resolution) {
+           console.dir(feature.getProperties())
+            if (!styleCache) {
+                styleCache = new ol.style.Style({
+                    text: new ol.style.Text({
+                        font: '15px Calibri,sans-serif',
+                        offsetX: 15,
+                        offsetY: -8,
+                        text: feature.get('name') + "dupa",
+                        fill: new ol.style.Fill({
+                            color: '#fff'
+                        }),
+                        stroke: new ol.style.Stroke({
+                            color: '#f00',
+                            width: 2
+                        })
+                    }),
+                    image: new ol.style.Circle({
+                        radius: 5,
+                        fill: new ol.style.Fill({
+                          color: 'Red'
+                        })
+                    })
+                })
+            }
+            return [styleCache];
+        }
 
-            if (feature !== highlight) {
-                if (highlight) {
-                    const style = new ol.style.Style({
-                        text: new ol.style.Text({
-                            text: ""
-                        }),
-                        image: new ol.style.Circle({
-                            radius: 5,
-                            fill: new ol.style.Fill({
-                              color: 'Blue'
-                            })
-                        })
-                    });
-                    highlight.setStyle(style);
-                }
-                if (feature) {
-                    const style = new ol.style.Style({
-                        text: new ol.style.Text({
-                            font: '15px Calibri,sans-serif',
-                            offsetX: 15,
-                            offsetY: -8,
-                            text: feature.get('name'),
-                            fill: new ol.style.Fill({
-                                color: '#fff'
-                            }),
-                            stroke: new ol.style.Stroke({
-                                color: '#f00',
-                                width: 2
-                            })
-                        }),
-                        image: new ol.style.Circle({
-                            radius: 5,
-                            fill: new ol.style.Fill({
-                              color: 'Red'
-                            })
-                        })
-                    });
-                    feature.setStyle(style);
-                }
-                highlight = feature;
-            }
-        };
-    
-        map.on('pointermove', function(evt) {
-            if (evt.dragging) {
-                return;
-            }
-            const pixel = evt.pixel;
-            displayFeatureInfo(pixel);
+        const select = new ol.interaction.Select({
+            style: styleFunction
         });
+        map.addInteraction(select);
+        const modify = new ol.interaction.Modify({
+            // source: vectorSource
+            features: select.getFeatures()
+        });
+        // map.addInteraction(modify);
+
+        let snap;
+        const addInteractions = function() {
+            // draw = new ol.interaction.Draw({
+            //     source: vectorSource,
+            //     type: typeSelect.value
+            // });
+            // map.addInteraction(draw);
+            snap = new ol.interaction.Snap({source: vectorSource});
+            // map.addInteraction(snap);
+        }
+        addInteractions();
     }
 
     render() {
