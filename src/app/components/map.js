@@ -86,75 +86,78 @@ export default class Map extends Component {
         const scaleLine = new ol.control.ScaleLine();
         map.addControl(scaleLine);
 
+        const defaultStyle = new ol.style.Style({
+            text: new ol.style.Text({
+                text: ""
+            }),
+            image: new ol.style.Circle({
+                radius: 5,
+                fill: new ol.style.Fill({
+                  color: 'BlueViolet'
+                })
+              })
+        });
+
+        const selectStyle = new ol.style.Style({
+            text: new ol.style.Text({
+                font: '15px Calibri,sans-serif',
+                offsetX: 15,
+                offsetY: -8,
+                text: "feature.get('name')" + "dupa",
+                fill: new ol.style.Fill({
+                    color: '#fff'
+                }),
+                stroke: new ol.style.Stroke({
+                    color: '#f00',
+                    width: 2
+                })
+            }),
+            image: new ol.style.Circle({
+                radius: 5,
+                fill: new ol.style.Fill({
+                  color: 'Red'
+                })
+            })
+        });
+
         dragAndDropInteraction.on('addfeatures', function(event) {
             vectorSource.addFeatures(event.features);
             vectorSource.getFeatures().map(feature => {
                 // console.log(feature.getProperties());
-                const style = new ol.style.Style({
-                    text: new ol.style.Text({
-                        text: ""
-                    }),
-                    image: new ol.style.Circle({
-                        radius: 5,
-                        fill: new ol.style.Fill({
-                          color: 'BlueViolet'
-                        })
-                      })
-                });
-                feature.setStyle(style);
+                feature.setStyle(defaultStyle);
             })
             // map.getView().fit(vectorSource.getExtent());
         });
 
         // Add additional interactions   
-        let styleCache;
-        const styleFunction = function(feature, resolution) {
-           console.dir(feature.getProperties())
-            if (!styleCache) {
-                styleCache = new ol.style.Style({
-                    text: new ol.style.Text({
-                        font: '15px Calibri,sans-serif',
-                        offsetX: 15,
-                        offsetY: -8,
-                        text: feature.get('name') + "dupa",
-                        fill: new ol.style.Fill({
-                            color: '#fff'
-                        }),
-                        stroke: new ol.style.Stroke({
-                            color: '#f00',
-                            width: 2
-                        })
-                    }),
-                    image: new ol.style.Circle({
-                        radius: 5,
-                        fill: new ol.style.Fill({
-                          color: 'Red'
-                        })
-                    })
-                })
+        const selectInteraction = new ol.interaction.Select({
+        });
+        map.addInteraction(selectInteraction);
+
+        selectInteraction.on('select', function (event) {
+            if(event.selected.length > 0) {
+                event.selected[0].setStyle(selectStyle);
             }
-            return [styleCache];
-        }
-
-        const select = new ol.interaction.Select({
-            style: styleFunction
+        
+            if(event.deselected.length > 0) {
+                event.deselected[0].setStyle(defaultStyle);
+            }
         });
-        map.addInteraction(select);
-        const modify = new ol.interaction.Modify({
-            // source: vectorSource
-            features: select.getFeatures()
+        
+        const modifyInteraction = new ol.interaction.Modify({
+            features: selectInteraction.getFeatures()
         });
-        // map.addInteraction(modify);
+        map.addInteraction(modifyInteraction);
 
-        let snap;
+        let snapInteraction;
         const addInteractions = function() {
-            // draw = new ol.interaction.Draw({
+            // drawInteraction = new ol.interaction.Draw({
             //     source: vectorSource,
             //     type: typeSelect.value
             // });
-            // map.addInteraction(draw);
-            snap = new ol.interaction.Snap({source: vectorSource});
-            // map.addInteraction(snap);
+            // map.addInteraction(drawInteraction);
+            snapInteraction = new ol.interaction.Snap({source: vectorSource});
+            map.addInteraction(snapInteraction);
         }
         addInteractions();
     }
