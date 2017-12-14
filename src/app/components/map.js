@@ -134,32 +134,100 @@ export default class Map extends Component {
         });
         map.addInteraction(selectInteraction);
 
-        selectInteraction.on('select', function (event) {
+        // $(document).keypress(function(e) {
+        //     if(e.which == 13) {
+        //         let active = selectInteraction.getActive();
+        //         selectInteraction.setActive(!active);
+        //         console.log(selectInteraction.getActive()); 
+        //     }
+        // });
+
+        const isAnyFeatureSelected = function() {
+            if (selectInteraction.getFeatures().getLength() > 0)
+                return true;
+            else
+                return false;
+        };
+
+        selectInteraction.on('select', function(event) {
             if(event.selected.length > 0) {
                 event.selected[0].setStyle(selectStyle);
             }
-        
             if(event.deselected.length > 0) {
                 event.deselected[0].setStyle(defaultStyle);
             }
         });
-        
+
         const modifyInteraction = new ol.interaction.Modify({
             features: selectInteraction.getFeatures()
         });
         map.addInteraction(modifyInteraction);
 
-        let snapInteraction;
-        const addInteractions = function() {
-            // drawInteraction = new ol.interaction.Draw({
-            //     source: vectorSource,
-            //     type: typeSelect.value
-            // });
-            // map.addInteraction(drawInteraction);
-            snapInteraction = new ol.interaction.Snap({source: vectorSource});
-            map.addInteraction(snapInteraction);
-        }
-        addInteractions();
+        // const drawInteraction = new ol.interaction.Draw({
+        //     source: vectorSource,
+        //     type: typeSelect.value
+        // });
+        // map.addInteraction(drawInteraction);
+        const snapInteraction = new ol.interaction.Snap({source: vectorSource});
+        map.addInteraction(snapInteraction);
+
+        // Highlight waypoints 
+        let highlight;
+        const displayFeatureInfo = function(pixel) {
+            const feature = map.forEachFeatureAtPixel(pixel, function (feature) {
+                return feature;
+            });
+
+            if (feature !== highlight) {
+                if (highlight) {
+                    const style = new ol.style.Style({
+                        text: new ol.style.Text({
+                            text: ""
+                        }),
+                        image: new ol.style.Circle({
+                            radius: 5,
+                            fill: new ol.style.Fill({
+                              color: 'Bisque'
+                            })
+                        })
+                    });
+                    highlight.setStyle(style);
+                }
+                if (feature) {
+                    const style = new ol.style.Style({
+                        text: new ol.style.Text({
+                            font: '15px Calibri,sans-serif',
+                            offsetX: 15,
+                            offsetY: -8,
+                            text: feature.get('name'),
+                            fill: new ol.style.Fill({
+                                color: '#fff'
+                            }),
+                            stroke: new ol.style.Stroke({
+                                color: '#f00',
+                                width: 2
+                            })
+                        }),
+                        image: new ol.style.Circle({
+                            radius: 5,
+                            fill: new ol.style.Fill({
+                              color: 'Chartreuse'
+                            })
+                        })
+                    });
+                    feature.setStyle(style);
+                }
+                highlight = feature;
+            }
+        };
+    
+        map.on('pointermove', function(evt) {
+            if (evt.dragging) {
+                return;
+            }
+            const pixel = evt.pixel;
+            // displayFeatureInfo(pixel);
+        });
     }
 
     render() {
