@@ -98,28 +98,6 @@ export default class Map extends Component {
               })
         });
 
-        const selectStyle = new ol.style.Style({
-            text: new ol.style.Text({
-                font: '15px Calibri,sans-serif',
-                offsetX: 15,
-                offsetY: -8,
-                text: "feature.get('name')" + "dupa",
-                fill: new ol.style.Fill({
-                    color: '#fff'
-                }),
-                stroke: new ol.style.Stroke({
-                    color: '#f00',
-                    width: 2
-                })
-            }),
-            image: new ol.style.Circle({
-                radius: 5,
-                fill: new ol.style.Fill({
-                  color: 'Red'
-                })
-            })
-        });
-
         dragAndDropInteraction.on('addfeatures', function(event) {
             vectorSource.addFeatures(event.features);
             vectorSource.getFeatures().map(feature => {
@@ -134,14 +112,6 @@ export default class Map extends Component {
         });
         map.addInteraction(selectInteraction);
 
-        // $(document).keypress(function(e) {
-        //     if(e.which == 13) {
-        //         let active = selectInteraction.getActive();
-        //         selectInteraction.setActive(!active);
-        //         console.log(selectInteraction.getActive()); 
-        //     }
-        // });
-
         const isAnyFeatureSelected = function() {
             if (selectInteraction.getFeatures().getLength() > 0)
                 return true;
@@ -151,7 +121,29 @@ export default class Map extends Component {
 
         selectInteraction.on('select', function(event) {
             if(event.selected.length > 0) {
-                event.selected[0].setStyle(selectStyle);
+                event.selected[0].setStyle(
+                    new ol.style.Style({
+                        text: new ol.style.Text({
+                            font: '15px Calibri,sans-serif',
+                            offsetX: 15,
+                            offsetY: -8,
+                            text: event.selected[0].get('name'),
+                            fill: new ol.style.Fill({
+                                color: '#fff'
+                            }),
+                            stroke: new ol.style.Stroke({
+                                color: '#f00',
+                                width: 2
+                            })
+                        }),
+                        image: new ol.style.Circle({
+                            radius: 5,
+                            fill: new ol.style.Fill({
+                              color: 'Red'
+                            })
+                        })
+                    })
+                );
             }
             if(event.deselected.length > 0) {
                 event.deselected[0].setStyle(defaultStyle);
@@ -177,7 +169,6 @@ export default class Map extends Component {
             const feature = map.forEachFeatureAtPixel(pixel, function (feature) {
                 return feature;
             });
-
             if (feature !== highlight) {
                 if (highlight) {
                     const style = new ol.style.Style({
@@ -225,9 +216,20 @@ export default class Map extends Component {
             if (evt.dragging) {
                 return;
             }
-            const pixel = evt.pixel;
-            // displayFeatureInfo(pixel);
+            if (!isAnyFeatureSelected()){
+                const pixel = evt.pixel;
+                displayFeatureInfo(pixel); 
+            }
         });
+
+        // $(document).keypress(function(e) {
+        //     if(e.which == 13) {
+        //         // let active = selectInteraction.getActive();
+        //         // selectInteraction.setActive(!active);
+        //         // console.log(selectInteraction.getActive()); 
+        //         console.log(isAnyFeatureSelected()); 
+        //     }
+        // });
     }
 
     render() {
