@@ -109,6 +109,7 @@ export default class Map extends Component {
 
         // Add additional interactions   
         const selectInteraction = new ol.interaction.Select({
+            toggleCondition: ol.events.condition.never
         });
         map.addInteraction(selectInteraction);
 
@@ -222,14 +223,14 @@ export default class Map extends Component {
             }
         });
 
-        // $(document).keypress(function(e) {
-        //     if(e.which == 13) {
-        //         // let active = selectInteraction.getActive();
-        //         // selectInteraction.setActive(!active);
-        //         // console.log(selectInteraction.getActive()); 
-        //         console.log(isAnyFeatureSelected()); 
-        //     }
-        // });
+        $(document).keypress(function(e) {
+            if(e.which == 13) {
+                // let active = selectInteraction.getActive();
+                // selectInteraction.setActive(!active);
+                // console.log(selectInteraction.getActive()); 
+                console.log(isAnyFeatureSelected()); 
+            }
+        });
     }
 
     render() {
