@@ -113,13 +113,6 @@ export default class Map extends Component {
         });
         map.addInteraction(selectInteraction);
 
-        const isAnyFeatureSelected = function() {
-            if (selectInteraction.getFeatures().getLength() > 0)
-                return true;
-            else
-                return false;
-        };
-
         selectInteraction.on('select', function(event) {
             if(event.selected.length > 0) {
                 event.selected[0].setStyle(
@@ -152,7 +145,8 @@ export default class Map extends Component {
         });
 
         const modifyInteraction = new ol.interaction.Modify({
-            features: selectInteraction.getFeatures()
+            features: selectInteraction.getFeatures(),
+            style: []
         });
         map.addInteraction(modifyInteraction);
 
@@ -166,12 +160,10 @@ export default class Map extends Component {
 
         // Highlight waypoints 
         let highlight;
-        const displayFeatureInfo = function(pixel) {
-            const feature = map.forEachFeatureAtPixel(pixel, function (feature) {
-                return feature;
-            });
+        const displayFeatureInfo = function(feature) {
             if (feature !== highlight) {
-                if (highlight) {
+                const featureSelected = selectInteraction.getFeatures().item(0);
+                if (highlight && (highlight != featureSelected)) {
                     const style = new ol.style.Style({
                         text: new ol.style.Text({
                             text: ""
@@ -213,23 +205,55 @@ export default class Map extends Component {
             }
         };
     
+        const getFeatureIndicated = function(pixel) {
+            const feature = map.forEachFeatureAtPixel(pixel, function (feature) {
+                return feature;
+            });
+            return feature;
+        }
+
         map.on('pointermove', function(evt) {
             if (evt.dragging) {
                 return;
             }
-            if (!isAnyFeatureSelected()){
-                const pixel = evt.pixel;
-                displayFeatureInfo(pixel); 
+            const pixel = evt.pixel;
+            const featureSelected = selectInteraction.getFeatures().item(0);
+            const featureIndicated = getFeatureIndicated(pixel);
+            const isFeatureSelectedIndicated = (featureSelected && featureIndicated && (featureSelected == featureIndicated)) 
+                ? true : false; 
+            const isAnyFeatureSelected = (selectInteraction.getFeatures().getLength() > 0)
+                ? true : false;
+            if (!isAnyFeatureSelected || !isFeatureSelectedIndicated){
+                displayFeatureInfo(featureIndicated); 
             }
         });
+
+        function getKMLFromFeatures(features) {
+            const format = new ol.format.KML();
+            const kml = format.writeFeatures(features, {featureProjection: map.getView().getProjection()});
+            return kml;
+        };
+        function getGeoJSONFromFeatures(features) {
+            const format = new ol.format.GeoJSON();
+            const geoJSON = format.writeFeatures(features, {featureProjection: map.getView().getProjection()});
+            return geoJSON;
+        };
+        function getFeaturesFromLayer(layer) {
+            const source = layer.getSource();
+            const features = source.getFeatures();
+            return features;
+        };
 
         $(document).keypress(function(e) {
             if(e.which == 13) {
                 // let active = selectInteraction.getActive();
                 // selectInteraction.setActive(!active);
                 // console.log(selectInteraction.getActive()); 
-                console.log(isAnyFeatureSelected()); 
             }
+            const kml = getKMLFromFeatures(getFeaturesFromLayer(vectorLayer));
+            console.dir(getFeaturesFromLayer(vectorLayer));
+            const blob = new Blob([kml], {type: "text/plain;charset=utf-8"});
+            saveAs(blob, "waypoints"+".kml");
         });
     }
 
