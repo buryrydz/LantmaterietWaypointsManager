@@ -235,7 +235,7 @@ export default class Map extends Component {
         };
         function getGeoJSONFromFeatures(features) {
             const format = new ol.format.GeoJSON();
-            const geoJSON = format.writeFeatures(features, {featureProjection: map.getView().getProjection()});
+            const geoJSON = format.writeFeaturesObject(features, {featureProjection: map.getView().getProjection()});
             return geoJSON;
         };
         function getFeaturesFromLayer(layer) {
@@ -250,8 +250,9 @@ export default class Map extends Component {
                 // selectInteraction.setActive(!active);
                 // console.log(selectInteraction.getActive()); 
             }
-            const kml = getKMLFromFeatures(getFeaturesFromLayer(vectorLayer));
-            console.dir(getFeaturesFromLayer(vectorLayer));
+            const geojsonObject = getGeoJSONFromFeatures(getFeaturesFromLayer(vectorLayer));
+            // console.dir(getFeaturesFromLayer(vectorLayer));
+            const kml = tokml(geojsonObject);
             const blob = new Blob([kml], {type: "text/plain;charset=utf-8"});
             saveAs(blob, "waypoints"+".kml");
         });
