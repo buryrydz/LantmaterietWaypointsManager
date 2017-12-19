@@ -101,10 +101,9 @@ export default class Map extends Component {
         dragAndDropInteraction.on('addfeatures', function(event) {
             vectorSource.addFeatures(event.features);
             vectorSource.getFeatures().map(feature => {
-                // console.log(feature.getProperties());
                 feature.setStyle(defaultStyle);
             })
-            // map.getView().fit(vectorSource.getExtent());
+            map.getView().fit(vectorSource.getExtent());
         });
 
         // Add additional interactions   
@@ -164,18 +163,7 @@ export default class Map extends Component {
             if (feature !== highlight) {
                 const featureSelected = selectInteraction.getFeatures().item(0);
                 if (highlight && (highlight != featureSelected)) {
-                    const style = new ol.style.Style({
-                        text: new ol.style.Text({
-                            text: ""
-                        }),
-                        image: new ol.style.Circle({
-                            radius: 5,
-                            fill: new ol.style.Fill({
-                              color: 'Bisque'
-                            })
-                        })
-                    });
-                    highlight.setStyle(style);
+                    highlight.setStyle(defaultStyle);
                 }
                 if (feature) {
                     const style = new ol.style.Style({
@@ -251,13 +239,22 @@ export default class Map extends Component {
             saveAs(blob, "waypoints"+".kml");
         }
 
+        function clearFeatures(vectorLayer) {
+            const source = vectorLayer.getSource();
+            source.clear(true);
+        }
+
+        function selectFeature() {
+
+        }
+
         $(document).keypress(function(e) {
             if(e.which == 13) {
-                // let active = selectInteraction.getActive();
-                // selectInteraction.setActive(!active);
-                // console.log(selectInteraction.getActive()); 
-            }
-            exportFeaturesToKml(vectorLayer);          
+                vectorSource.forEachFeature(feature => {
+                    feature.setId(0);
+                    console.log(feature.getId())
+                });
+            }         
         });
     }
 
@@ -267,3 +264,13 @@ export default class Map extends Component {
         )
     }
 }
+
+// TO DO...
+// addFeature
+// importFeatures
+// exportFeatures DONE
+// clearFeatures DONE
+// selectFeature
+// changeFeatureName
+// deleteFeature
+// addFeatureToFavorites
