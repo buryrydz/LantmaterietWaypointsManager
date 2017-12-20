@@ -155,7 +155,7 @@ export default class Map extends Component {
 
         dragAndDropInteraction.on('addfeatures', function(event) {
             vectorSource.addFeatures(event.features);
-            vectorSource.getFeatures().map(feature => {
+            event.features.map(feature => {
                 feature.setId(createFeatureId());
                 feature.setStyle(setFeatureDefaultStyle());
             })
