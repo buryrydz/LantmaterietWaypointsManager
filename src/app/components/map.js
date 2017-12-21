@@ -156,8 +156,12 @@ export default class Map extends Component {
         dragAndDropInteraction.on('addfeatures', function(event) {
             vectorSource.addFeatures(event.features);
             event.features.map(feature => {
-                feature.setId(createFeatureId());
+                const featureId = createFeatureId();
+                feature.setId(featureId);
                 feature.setStyle(setFeatureDefaultStyle());
+                feature.set('name', defaultFeatureName);
+                // TO DO... powiadom inne komponenty ze dodano nowy waypoint,
+                // przekaz Id oraz nazwe nowego waypointa(?)
             })
             map.getView().fit(vectorSource.getExtent());
         });
@@ -195,6 +199,9 @@ export default class Map extends Component {
             const feature = event.feature;
             const featureId = createFeatureId();
             feature.setId(featureId);
+            feature.set('name', defaultFeatureName);
+            // TO DO... powiadom inne komponenty ze dodano nowy waypoint,
+            // przekaz Id oraz nazwe nowego waypointa(?)
         });
 
         const snapInteraction = new ol.interaction.Snap({source: vectorSource});
@@ -241,6 +248,22 @@ export default class Map extends Component {
                 displayFeatureInfo(featureIndicated); 
             }
         });
+
+        function importFeatures(file) {
+            const format = new ol.format.KML();
+            const features = format.readFeatures(file, {featureProjection: map.getView().getProjection()});
+            console.log(format.readName(file));
+            vectorSource.addFeatures(features);
+            // features.map(feature => {
+            //     const featureId = createFeatureId();
+            //     feature.setId(featureId);
+            //     feature.setStyle(setFeatureDefaultStyle());
+            //     feature.set('name', defaultFeatureName);
+            //     // TO DO... powiadom inne komponenty ze dodano nowy waypoint,
+            //     // przekaz Id oraz nazwe nowego waypointa(?)
+            // })
+            // map.getView().fit(vectorSource.getExtent());
+        };
 
         function getKMLFromFeatures(features) {
             const format = new ol.format.KML();
@@ -340,7 +363,15 @@ export default class Map extends Component {
 
         $(document).keypress(function(e) {
             if(e.which == 13) {
-                enableAddFeature(true);
+                // enableAddFeature(true);
+
+                const inputElement = document.getElementById('file-input');
+                inputElement.addEventListener("change", handleFiles, false);
+                function handleFiles() {
+                  const file = this.files[0];
+                  importFeatures(file);
+                }
+                inputElement.click();
             } 
             else if(e.which == 32) {
                 console.log(getFeatureSelected().getId());
@@ -357,7 +388,7 @@ export default class Map extends Component {
 }
 
 // TO DO...
-// enableAddFeature
+// enableAddFeature DONE
 // importFeatures
 // exportFeatures DONE
 // clearFeatures DONE
