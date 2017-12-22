@@ -87,7 +87,7 @@ export default class Map extends Component {
         const scaleLine = new ol.control.ScaleLine();
         map.addControl(scaleLine);
 
-        const setFeatureDefaultStyle = function() {
+        function setFeatureDefaultStyle() {
             return new ol.style.Style({
                 text: new ol.style.Text({
                     text: ""
@@ -101,7 +101,7 @@ export default class Map extends Component {
             });
         };
 
-        const setFeatureSelectStyle = function(featureName) {
+        function setFeatureSelectStyle(featureName) {
             return new ol.style.Style({
                 text: new ol.style.Text({
                     font: '15px Calibri,sans-serif',
@@ -125,7 +125,7 @@ export default class Map extends Component {
             });
         };
 
-        const setFeatureHighlightStyle = function(featureName) {
+        function setFeatureHighlightStyle(featureName) {
             return new ol.style.Style({
                 text: new ol.style.Text({
                     font: '15px Calibri,sans-serif',
@@ -149,7 +149,7 @@ export default class Map extends Component {
             });
         };
 
-        const setFeatureEmptyStyle = function() {
+        function setFeatureEmptyStyle() {
             return [];
         }
 
@@ -159,7 +159,6 @@ export default class Map extends Component {
                 const featureId = createFeatureId();
                 feature.setId(featureId);
                 feature.setStyle(setFeatureDefaultStyle());
-                feature.set('name', defaultFeatureName);
                 // TO DO... powiadom inne komponenty ze dodano nowy waypoint,
                 // przekaz Id oraz nazwe nowego waypointa(?)
             })
@@ -209,7 +208,7 @@ export default class Map extends Component {
 
         // Highlight waypoints 
         let highlight;
-        const displayFeatureInfo = function(feature) {
+        function displayFeatureInfo(feature) {
             if (feature !== highlight) {
                 const featureSelected = getFeatureSelected();
                 if (highlight && (highlight !== featureSelected)) {
@@ -222,14 +221,14 @@ export default class Map extends Component {
             }
         };
     
-        const getFeatureIndicated = function(pixel) {
+        function getFeatureIndicated(pixel) {
             const feature = map.forEachFeatureAtPixel(pixel, function (feature) {
                 return feature;
             });
             return feature;
         };
 
-        const getFeatureSelected = function() {
+        function getFeatureSelected() {
             return selectInteraction.getFeatures().item(0);
         };
 
@@ -249,20 +248,18 @@ export default class Map extends Component {
             }
         });
 
-        function importFeatures(file) {
+        function importFeatures(data) {
             const format = new ol.format.KML();
-            const features = format.readFeatures(file, {featureProjection: map.getView().getProjection()});
-            console.log(format.readName(file));
+            const features = format.readFeatures(data, {featureProjection: map.getView().getProjection()});
             vectorSource.addFeatures(features);
-            // features.map(feature => {
-            //     const featureId = createFeatureId();
-            //     feature.setId(featureId);
-            //     feature.setStyle(setFeatureDefaultStyle());
-            //     feature.set('name', defaultFeatureName);
-            //     // TO DO... powiadom inne komponenty ze dodano nowy waypoint,
-            //     // przekaz Id oraz nazwe nowego waypointa(?)
-            // })
-            // map.getView().fit(vectorSource.getExtent());
+            features.map(feature => {
+                const featureId = createFeatureId();
+                feature.setId(featureId);
+                feature.setStyle(setFeatureDefaultStyle());
+                // TO DO... powiadom inne komponenty ze dodano nowy waypoint,
+                // przekaz Id oraz nazwe nowego waypointa(?)
+            })
+            map.getView().fit(vectorSource.getExtent());
         };
 
         function getKMLFromFeatures(features) {
@@ -365,13 +362,30 @@ export default class Map extends Component {
             if(e.which == 13) {
                 // enableAddFeature(true);
 
-                const inputElement = document.getElementById('file-input');
-                inputElement.addEventListener("change", handleFiles, false);
-                function handleFiles() {
-                  const file = this.files[0];
-                  importFeatures(file);
+                // ***FILE CHOOSER CODE***
+                const fileInput = document.getElementById('file-input');
+                fileInput.addEventListener("change", handleFiles, false);
+                function handleFiles(){
+                    // const fileInput = document.getElementById('file-input');
+                    const filePath = this.value;
+                    const allowedExtensions = /(\.kml)$/i;
+                    if(!allowedExtensions.exec(filePath)){
+                        alert('Please upload file having extension .kml only');
+                        this.value = '';
+                        return false;
+                    }else{
+                        if (this.files && this.files[0]) {
+                            const reader = new FileReader();
+                            reader.onload = function(event) {
+                                const dataURL = reader.result;
+                                importFeatures(dataURL);
+                            };
+                            reader.readAsText(this.files[0]);
+                        }
+                    }
                 }
-                inputElement.click();
+                fileInput.click();
+                // ***END OF FILE CHOOSER CODE***
             } 
             else if(e.which == 32) {
                 console.log(getFeatureSelected().getId());
@@ -389,7 +403,7 @@ export default class Map extends Component {
 
 // TO DO...
 // enableAddFeature DONE
-// importFeatures
+// importFeatures DONE
 // exportFeatures DONE
 // clearFeatures DONE
 // selectFeature DONE
