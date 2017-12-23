@@ -246,6 +246,7 @@ export default class Map extends Component {
             if (!isAnyFeatureSelected || !isFeatureSelectedIndicated){
                 displayFeatureInfo(featureIndicated); 
             }
+            map.getTargetElement().style.cursor = featureIndicated ? 'pointer' : '';
         });
 
         function importFeatures(data) {
