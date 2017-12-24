@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import '../scss/map.scss';
 
+
 // In order to work with EPSG:3006 coordinate reference system
 proj4.defs('EPSG:3006', '+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +axis=neu +no_defs');
 
@@ -92,12 +93,14 @@ export default class Map extends Component {
                 text: new ol.style.Text({
                     text: ""
                 }),
-                image: new ol.style.Circle({
-                    radius: 5,
-                    fill: new ol.style.Fill({
-                      color: 'BlueViolet'
-                    })
-                  })
+                image: new ol.style.Icon({
+                    // color: '#FFFFFF',
+                    anchor: [18, 38],
+                    anchorXUnits: 'pixels',
+                    anchorYUnits: 'pixels',
+                    scale: 1,
+                    src: 'images/default.png'
+                })
             });
         };
 
@@ -105,8 +108,9 @@ export default class Map extends Component {
             return new ol.style.Style({
                 text: new ol.style.Text({
                     font: '15px Calibri,sans-serif',
-                    offsetX: 15,
-                    offsetY: -8,
+                    offsetX: 10,
+                    offsetY: 0,
+                    textAlign: 'left',
                     text: featureName,
                     fill: new ol.style.Fill({
                         color: '#fff'
@@ -116,11 +120,13 @@ export default class Map extends Component {
                         width: 2
                     })
                 }),
-                image: new ol.style.Circle({
-                    radius: 5,
-                    fill: new ol.style.Fill({
-                    color: 'Red'
-                    })
+                image: new ol.style.Icon({
+                    color: '#CCCCCC',
+                    anchor: [18, 38],
+                    anchorXUnits: 'pixels',
+                    anchorYUnits: 'pixels',
+                    scale: 1,
+                    src: 'images/default.png'
                 })
             });
         };
@@ -129,8 +135,9 @@ export default class Map extends Component {
             return new ol.style.Style({
                 text: new ol.style.Text({
                     font: '15px Calibri,sans-serif',
-                    offsetX: 15,
-                    offsetY: -8,
+                    offsetX: 10,
+                    offsetY: 0,
+                    textAlign: 'left',
                     text: featureName,
                     fill: new ol.style.Fill({
                         color: '#fff'
@@ -140,11 +147,13 @@ export default class Map extends Component {
                         width: 2
                     })
                 }),
-                image: new ol.style.Circle({
-                    radius: 5,
-                    fill: new ol.style.Fill({
-                      color: 'Chartreuse'
-                    })
+                image: new ol.style.Icon({
+                    // color: '#FFFFFF',
+                    anchor: [18, 38],
+                    anchorXUnits: 'pixels',
+                    anchorYUnits: 'pixels',
+                    scale: 1,
+                    src: 'images/default.png'
                 })
             });
         };
@@ -180,11 +189,11 @@ export default class Map extends Component {
             }
         });
 
-        const modifyInteraction = new ol.interaction.Modify({
+        const translateInteraction = new ol.interaction.Translate({
             features: selectInteraction.getFeatures(),
             style: setFeatureEmptyStyle()
         });
-        map.addInteraction(modifyInteraction);
+        map.addInteraction(translateInteraction);
 
         const drawInteraction = new ol.interaction.Draw({
             source: vectorSource,
