@@ -88,7 +88,7 @@ export default class Map extends Component {
         const scaleLine = new ol.control.ScaleLine();
         map.addControl(scaleLine);
 
-        function setFeatureDefaultStyle() {
+        function getFeatureDefaultStyle() {
             return new ol.style.Style({
                 text: new ol.style.Text({
                     text: ""
@@ -104,7 +104,7 @@ export default class Map extends Component {
             });
         };
 
-        function setFeatureSelectStyle(featureName) {
+        function getFeatureSelectStyle(featureName) {
             return new ol.style.Style({
                 text: new ol.style.Text({
                     font: '15px Calibri,sans-serif',
@@ -131,7 +131,7 @@ export default class Map extends Component {
             });
         };
 
-        function setFeatureHighlightStyle(featureName) {
+        function getFeatureHighlightStyle(featureName) {
             return new ol.style.Style({
                 text: new ol.style.Text({
                     font: '15px Calibri,sans-serif',
@@ -158,7 +158,7 @@ export default class Map extends Component {
             });
         };
 
-        function setFeatureEmptyStyle() {
+        function getFeatureEmptyStyle() {
             return [];
         }
 
@@ -167,7 +167,7 @@ export default class Map extends Component {
             event.features.map(feature => {
                 const featureId = createFeatureId();
                 feature.setId(featureId);
-                feature.setStyle(setFeatureDefaultStyle());
+                feature.setStyle(getFeatureDefaultStyle());
                 // TO DO... powiadom inne komponenty ze dodano nowy waypoint,
                 // przekaz Id oraz nazwe nowego waypointa(?)
             })
@@ -182,16 +182,16 @@ export default class Map extends Component {
 
         selectInteraction.on('select', function(event) {
             if(event.selected.length > 0) {
-                event.selected[0].setStyle(setFeatureSelectStyle(event.selected[0].get('name')));
+                event.selected[0].setStyle(getFeatureSelectStyle(event.selected[0].get('name')));
             }
             if(event.deselected.length > 0) {
-                event.deselected[0].setStyle(setFeatureDefaultStyle());
+                event.deselected[0].setStyle(getFeatureDefaultStyle());
             }
         });
 
         const translateInteraction = new ol.interaction.Translate({
             features: selectInteraction.getFeatures(),
-            style: setFeatureEmptyStyle()
+            style: getFeatureEmptyStyle()
         });
         map.addInteraction(translateInteraction);
 
@@ -221,10 +221,10 @@ export default class Map extends Component {
             if (feature !== highlight) {
                 const featureSelected = getFeatureSelected();
                 if (highlight && (highlight !== featureSelected)) {
-                    highlight.setStyle(setFeatureDefaultStyle());
+                    highlight.setStyle(getFeatureDefaultStyle());
                 }
                 if (feature) {
-                    feature.setStyle(setFeatureHighlightStyle(feature.get('name')));
+                    feature.setStyle(getFeatureHighlightStyle(feature.get('name')));
                 }
                 highlight = feature;
             }
@@ -265,7 +265,7 @@ export default class Map extends Component {
             features.map(feature => {
                 const featureId = createFeatureId();
                 feature.setId(featureId);
-                feature.setStyle(setFeatureDefaultStyle());
+                feature.setStyle(getFeatureDefaultStyle());
                 // TO DO... powiadom inne komponenty ze dodano nowy waypoint,
                 // przekaz Id oraz nazwe nowego waypointa(?)
             })
@@ -352,14 +352,14 @@ export default class Map extends Component {
             const featureSelected = getFeatureSelected();
             feature.set('name', featureName);
             if (feature === featureSelected) {
-                feature.setStyle(setFeatureSelectStyle(featureName));
+                feature.setStyle(getFeatureSelectStyle(featureName));
             }
         };
 
         function deleteFeature(featureId) {
             const feature = vectorSource.getFeatureById(featureId); 
             vectorSource.removeFeature(feature);
-            feature.setStyle(setFeatureEmptyStyle());
+            feature.setStyle(getFeatureEmptyStyle());
         };
 
         function enableAddFeature(enable) {
