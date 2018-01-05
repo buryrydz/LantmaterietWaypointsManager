@@ -1,5 +1,5 @@
 import React from 'react';
-import Map from './map';
+import Map from '../containers/map';
 import MenuRight from './menu_right';
 
 export default () => {

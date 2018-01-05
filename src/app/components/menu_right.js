@@ -1,6 +1,6 @@
 import React from 'react';
 import SearchBar from './search_bar';
-import WaypointList from './waypoint_list';
+import WaypointList from '../containers/waypoint_list';
 
 export default () => {
     return (

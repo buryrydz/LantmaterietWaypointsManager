@@ -1,11 +1,14 @@
 import React, {Component} from 'react';
+import {connect} from 'react-redux';
+import {bindActionCreators} from 'redux';
+import {fetchWaypoints} from '../actions/index';
 import '../scss/map.scss';
 
 
 // In order to work with EPSG:3006 coordinate reference system
 proj4.defs('EPSG:3006', '+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +axis=neu +no_defs');
 
-export default class Map extends Component {
+class Map extends Component {
     constructor(props) {
         super(props);
     }
@@ -15,6 +18,8 @@ export default class Map extends Component {
     }
 
     initMap() {
+        addFeatures = addFeatures.bind(this);
+
         const defaultFeatureName = 'wpt';
         const projection = ol.proj.get('EPSG:3006');
         const extent = [ -1200000, 4700000, 2600000, 8500000 ];
@@ -163,15 +168,7 @@ export default class Map extends Component {
         }
 
         dragAndDropInteraction.on('addfeatures', function(event) {
-            vectorSource.addFeatures(event.features);
-            event.features.map(feature => {
-                const featureId = createFeatureId();
-                feature.setId(featureId);
-                feature.setStyle(getFeatureDefaultStyle());
-                // TO DO... powiadom inne komponenty ze dodano nowy waypoint,
-                // przekaz Id oraz nazwe nowego waypointa(?)
-            })
-            map.getView().fit(vectorSource.getExtent());
+            addFeatures(event.features);
         });
 
         // Add additional interactions   
@@ -261,15 +258,7 @@ export default class Map extends Component {
         function importFeatures(data) {
             const format = new ol.format.KML();
             const features = format.readFeatures(data, {featureProjection: map.getView().getProjection()});
-            vectorSource.addFeatures(features);
-            features.map(feature => {
-                const featureId = createFeatureId();
-                feature.setId(featureId);
-                feature.setStyle(getFeatureDefaultStyle());
-                // TO DO... powiadom inne komponenty ze dodano nowy waypoint,
-                // przekaz Id oraz nazwe nowego waypointa(?)
-            })
-            map.getView().fit(vectorSource.getExtent());
+            addFeatures(features);
         };
 
         function getKMLFromFeatures(features) {
@@ -315,6 +304,25 @@ export default class Map extends Component {
                     console.log(e.message);
                 }
             }
+        };
+
+        function addFeatures(features) {
+            const waypointsCache = [];
+            vectorSource.addFeatures(features);
+            features.map(feature => {
+                const featureId = createFeatureId();
+                const featureName = feature.get('name');
+                // add other waypoint properties here
+                const waypoint = {
+                    waypointId: featureId, 
+                    waypointName: featureName
+                };
+                waypointsCache.push(waypoint);
+                feature.setId(featureId);
+                feature.setStyle(getFeatureDefaultStyle());
+            })
+            this.props.fetchWaypoints(waypointsCache);
+            map.getView().fit(vectorSource.getExtent());
         };
 
         function selectFeature(featureId) {
@@ -411,6 +419,12 @@ export default class Map extends Component {
     }
 }
 
+function mapDispatchToProps(dispatch) {
+    return bindActionCreators({fetchWaypoints}, dispatch);
+}
+
+export default connect(null, mapDispatchToProps)(Map);
+
 // TO DO...
 // enableAddFeature DONE
 // importFeatures DONE
@@ -418,4 +432,4 @@ export default class Map extends Component {
 // clearFeatures DONE
 // selectFeature DONE
 // changeFeatureName DONE
-// deleteFeature [DONE]
+// deleteFeature DONE
