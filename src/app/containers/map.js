@@ -107,7 +107,7 @@ class Map extends Component {
                     src: 'images/default.png'
                 })
             });
-        };
+        }
 
         function getFeatureSelectStyle(featureName) {
             return new ol.style.Style({
@@ -134,7 +134,7 @@ class Map extends Component {
                     src: 'images/default.png'
                 })
             });
-        };
+        }
 
         function getFeatureHighlightStyle(featureName) {
             return new ol.style.Style({
@@ -161,7 +161,7 @@ class Map extends Component {
                     src: 'images/default.png'
                 })
             });
-        };
+        }
 
         function getFeatureEmptyStyle() {
             return [];
@@ -225,18 +225,18 @@ class Map extends Component {
                 }
                 highlight = feature;
             }
-        };
+        }
     
         function getFeatureIndicated(pixel) {
             const feature = map.forEachFeatureAtPixel(pixel, function (feature) {
                 return feature;
             });
             return feature;
-        };
+        }
 
         function getFeatureSelected() {
             return selectInteraction.getFeatures().item(0);
-        };
+        }
 
         map.on('pointermove', function(evt) {
             if (evt.dragging) {
@@ -259,35 +259,35 @@ class Map extends Component {
             const format = new ol.format.KML();
             const features = format.readFeatures(data, {featureProjection: map.getView().getProjection()});
             addFeatures(features);
-        };
+        }
 
         function getKMLFromFeatures(features) {
             const format = new ol.format.KML();
             const kml = format.writeFeatures(features, {featureProjection: map.getView().getProjection()});
             return kml;
-        };
+        }
         function getGeoJSONFromFeatures(features) {
             const format = new ol.format.GeoJSON();
             const geoJSON = format.writeFeaturesObject(features, {featureProjection: map.getView().getProjection()});
             return geoJSON;
-        };
+        }
         function getFeaturesFromLayer(layer) {
             const source = layer.getSource();
             const features = source.getFeatures();
             return features;
-        };
+        }
 
         function exportFeaturesToKml(vectorLayer) {
             const geojsonObject = getGeoJSONFromFeatures(getFeaturesFromLayer(vectorLayer));
             const kml = tokml(geojsonObject);
             const blob = new Blob([kml], {type: "text/plain;charset=utf-8"});
             saveAs(blob, "waypoints"+".kml");
-        };
+        }
 
         function clearFeatures(vectorLayer) {
             const source = vectorLayer.getSource();
             source.clear(true);
-        };
+        }
 
         let autoFeatureId = 0;
         function createFeatureId() {
@@ -304,7 +304,7 @@ class Map extends Component {
                     console.log(e.message);
                 }
             }
-        };
+        }
 
         function addFeatures(features) {
             const waypointsCache = [];
@@ -323,7 +323,7 @@ class Map extends Component {
             })
             this.props.fetchWaypoints(waypointsCache);
             map.getView().fit(vectorSource.getExtent());
-        };
+        }
 
         function selectFeature(featureId) {
             const featureToSelect = vectorSource.getFeatureById(featureId);
@@ -340,7 +340,7 @@ class Map extends Component {
                 center: featureToSelect.getGeometry().getCoordinates(),
                 duration: 1000
             });
-        };
+        }
 
         function deselectFeature(featureId) {
             const featureToDeselect = vectorSource.getFeatureById(featureId);
@@ -362,17 +362,17 @@ class Map extends Component {
             if (feature === featureSelected) {
                 feature.setStyle(getFeatureSelectStyle(featureName));
             }
-        };
+        }
 
         function deleteFeature(featureId) {
             const feature = vectorSource.getFeatureById(featureId); 
             vectorSource.removeFeature(feature);
             feature.setStyle(getFeatureEmptyStyle());
-        };
+        }
 
         function enableAddFeature(enable) {
             drawInteraction.setActive(enable);
-        };
+        }
 
         enableAddFeature(false);
 
@@ -413,9 +413,17 @@ class Map extends Component {
     }
 
     render() {
+        //selectFeature
+
         return (
             <div id="map" className="map"></div>
         )
+    }
+}
+
+function mapStateToProps(state) {
+    return {
+        activeWaypoint: state.activeWaypoint
     }
 }
 
@@ -423,7 +431,7 @@ function mapDispatchToProps(dispatch) {
     return bindActionCreators({fetchWaypoints}, dispatch);
 }
 
-export default connect(null, mapDispatchToProps)(Map);
+export default connect(mapStateToProps, mapDispatchToProps)(Map);
 
 // TO DO...
 // enableAddFeature DONE

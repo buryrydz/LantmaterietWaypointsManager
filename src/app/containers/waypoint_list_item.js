@@ -7,14 +7,15 @@ class WaypointListItem extends Component {
     constructor(props) {
         super(props);
     } 
+    
     render() {
         return (
             <div className="input-group p-1">
                 <button
-                    onClick={() => this.props.selectWaypoint()} 
+                    onClick={() => this.props.selectWaypoint(this.props.waypoint)} 
                     className="btn btn-light btn-block" 
                     type="button">
-                        {this.props.waypointName}
+                        {this.props.waypoint.waypointName}
                 </button>
             </div>
         )
