@@ -23,7 +23,7 @@ import WaypointListItemActive from '../components/waypoint_list_item_active';
             )
         }
     }
-    
+
     render() {
         return (
             <div>
@@ -37,7 +37,7 @@ function mapStateToProps(state) {
     return {
         waypoints: state.waypoints,
         activeWaypoint: state.activeWaypoint
-    };
+    }
 }
 
 export default connect(mapStateToProps)(WaypointList);
