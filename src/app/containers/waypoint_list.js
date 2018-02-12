@@ -12,8 +12,8 @@ import WaypointListItemActive from '../components/waypoint_list_item_active';
 
     renderWaypoint(waypoint) {
         const waypointId = waypoint.waypointId;
-        const active = (waypoint === this.props.activeWaypoint);
-        if (active) {
+        const activeWaypointId = this.props.activeWaypoint ? this.props.activeWaypoint.waypointId : -1;
+        if (waypointId === activeWaypointId) {
             return (
                 <WaypointListItemActive key={waypointId} waypoint={waypoint} />
             )

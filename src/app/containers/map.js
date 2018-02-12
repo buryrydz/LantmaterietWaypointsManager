@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 import {fetchWaypoints} from '../actions/index';
+import {selectWaypoint} from '../actions/index';
 import '../scss/map.scss';
 
 
@@ -11,8 +12,9 @@ proj4.defs('EPSG:3006', '+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 
 class Map extends Component {
     constructor(props) {
         super(props);
-        
+
         this.createMapManager = function() {
+            let isSelectedFeatureChosenUsingMap = false;
             const defaultFeatureName = 'wpt';
             const projection = ol.proj.get('EPSG:3006');
             const extent = [ -1200000, 4700000, 2600000, 8500000 ];
@@ -58,14 +60,12 @@ class Map extends Component {
                 pinchRotate : false
             });
     
-            // Create vector layer for waypoints
             const vectorSource = new ol.source.Vector({
             });
             const vectorLayer = new ol.layer.Vector({
                 source: vectorSource
             }); 
     
-            // Create map
             const map = new ol.Map({
                 target : 'map',
                 layers : [ wmts, vectorLayer ],
@@ -176,156 +176,172 @@ class Map extends Component {
                 source: vectorSource
             });
 
+            const parentComponent = this;
+
             return {
                 init: function() {
                     map.addControl(zoomSlider);
                     map.addControl(scaleLine);
-
+        
                     dragAndDropInteraction.on('addfeatures', function(event) {
                         this.addFeatures(event.features);
-                    });
+                    }.bind(this));
 
-                    // this.map.addInteraction(this.selectInteraction);
-                    // this.selectInteraction.on('select', function(event) {
-                    //     if(event.selected.length > 0) {
-                    //         event.selected[0].setStyle(this.getFeatureSelectStyle(event.selected[0].get('name')));
-                    //     }
-                    //     if(event.deselected.length > 0) {
-                    //         event.deselected[0].setStyle(this.getFeatureDefaultStyle());
-                    //     }
-                    // });
+                    map.addInteraction(selectInteraction);
+                    selectInteraction.on('select', function(event) {
+                        const isSelected = (event.selected.length > 0) ? true : false;
+                        const isDeselected = (event.deselected.length > 0) ? true : false;
+                        const featureSelected = isSelected ? event.selected[0] : null;
+                        const featureDeselected = isDeselected ? event.deselected[0] : null;
+                        if(isSelected && !isDeselected) {
+                            isSelectedFeatureChosenUsingMap = true;
+                            const featureSelectedId = featureSelected.getId();
+                            const featureSelectedName = featureSelected.get('name');
+                            parentComponent.props.selectWaypoint(this.getWaypointFromFeatureData(featureSelectedId, featureSelectedName));
+                        } else if(isSelected && isDeselected) {
+                            isSelectedFeatureChosenUsingMap = true;
+                            const featureSelectedId = featureSelected.getId();
+                            const featureSelectedName = featureSelected.get('name');
+                            parentComponent.props.selectWaypoint(this.getWaypointFromFeatureData(featureSelectedId, featureSelectedName));
+                        } else if(!isSelected && isDeselected) {
+                            parentComponent.props.selectWaypoint(null);
+                        }
+                    }.bind(this));
 
-                    // this.map.addInteraction(this.translateInteraction);
+                    map.addInteraction(translateInteraction);
 
-                    // this.map.addInteraction(this.drawInteraction);
-                    // this.drawInteraction.on('drawend', function(event) {
-                    //     this.enableAddFeature(false);
-                    //     const feature = event.feature;
-                    //     const featureId = this.createFeatureId();
-                    //     feature.setId(featureId);
-                    //     feature.set('name', this.defaultFeatureName);
-                    //     // TO DO... powiadom inne komponenty ze dodano nowy waypoint,
-                    //     // przekaz Id oraz nazwe nowego waypointa(?)
-                    // });
+                    map.addInteraction(drawInteraction);
+                    drawInteraction.on('drawend', function(event) {
+                        this.enableAddFeature(false);
+                        const feature = event.feature;
+                        const featureId = this.createFeatureId();
+                        feature.setId(featureId);
+                        feature.set('name', defaultFeatureName);
+                        // TO DO... powiadom inne komponenty ze dodano nowy waypoint,
+                        // przekaz Id oraz nazwe nowego waypointa(?)
+                    }.bind(this));
 
-                    // this.map.addInteraction(this.snapInteraction);
+                    map.addInteraction(snapInteraction);
 
-                    // this.map.on('pointermove', function(event) {
-                    //     if (event.dragging) {
-                    //         return;
-                    //     }
-                    //     const pixel = event.pixel;
-                    //     const featureSelected = this.getFeatureSelected();
-                    //     const featureIndicated = this.getFeatureIndicated(pixel);
-                    //     const isFeatureSelectedIndicated = (featureSelected && featureIndicated && (featureSelected == featureIndicated)) 
-                    //         ? true : false; 
-                    //     const isAnyFeatureSelected = (this.selectInteraction.getFeatures().getLength() > 0)
-                    //         ? true : false;
-                    //     if (!isAnyFeatureSelected || !isFeatureSelectedIndicated){
-                    //         this.displayFeatureInfo(featureIndicated); 
-                    //     }
-                    //     this.map.getTargetElement().style.cursor = featureIndicated ? 'pointer' : '';
-                    // });
+                    map.on('pointermove', function(event) {
+                        if (event.dragging) {
+                            return;
+                        }
+                        const pixel = event.pixel;
+                        const featureSelected = this.getFeatureSelected();
+                        const featureIndicated = this.getFeatureIndicated(pixel);
+                        const isFeatureSelectedIndicated = (featureSelected && featureIndicated && (featureSelected == featureIndicated)) 
+                            ? true : false; 
+                        const isAnyFeatureSelected = (selectInteraction.getFeatures().getLength() > 0)
+                            ? true : false;
+                        if (!isAnyFeatureSelected || !isFeatureSelectedIndicated){
+                            this.displayFeatureInfo(featureIndicated); 
+                        }
+                        map.getTargetElement().style.cursor = featureIndicated ? 'pointer' : '';
+                    }.bind(this));
 
-                    // this.enableAddFeature(false);
+                    this.enableAddFeature(false);
 
-                    // $(document).keypress(function(e) {
-                    //     if(e.which == 13) {
-                    //         // this.enableAddFeature(true);
+                    $(document).keypress(function(e) {
+                        if(e.which == 13) {
+                            // this.enableAddFeature(true);
             
-                    //         // // ***FILE CHOOSER CODE***
-                    //         // const fileInput = document.getElementById('file-input');
-                    //         // fileInput.addEventListener("change", handleFiles, false);
-                    //         // function handleFiles(){
-                    //         //     // const fileInput = document.getElementById('file-input');
-                    //         //     const filePath = this.value;
-                    //         //     const allowedExtensions = /(\.kml)$/i;
-                    //         //     if(!allowedExtensions.exec(filePath)){
-                    //         //         alert('Please upload file having extension .kml only');
-                    //         //         this.value = '';
-                    //         //         return false;
-                    //         //     }else{
-                    //         //         if (this.files && this.files[0]) {
-                    //         //             const reader = new FileReader();
-                    //         //             reader.onload = function(event) {
-                    //         //                 const dataURL = reader.result;
-                    //         //                 this.importFeatures(dataURL);
-                    //         //             };
-                    //         //             reader.readAsText(this.files[0]);
-                    //         //         }
-                    //         //     }
-                    //         // }
-                    //         // fileInput.click();
-                    //         // // ***END OF FILE CHOOSER CODE***
-                    //     } 
-                    //     else if(e.which == 32) {
-                    //         console.log(this.getFeatureSelected().getId());
-                    //         // console.log(this.vectorSource.getFeatures().length);
-                    //     }        
-                    // });
+                            // ***FILE CHOOSER CODE***
+                            const mapManager = this;
+                            const fileInput = document.getElementById('file-input');
+                            fileInput.addEventListener("change", handleFiles, false);
+                            function handleFiles(){
+                                // const fileInput = document.getElementById('file-input');
+                                const filePath = this.value;
+                                const allowedExtensions = /(\.kml)$/i;
+                                if(!allowedExtensions.exec(filePath)){
+                                    alert('Please upload file having extension .kml only');
+                                    this.value = '';
+                                    return false;
+                                } else{
+                                    if (this.files && this.files[0]) {
+                                        const reader = new FileReader();
+                                        reader.onload = function(event) {
+                                            const dataURL = reader.result;
+                                            mapManager.importFeatures(dataURL);
+                                        };
+                                        reader.readAsText(this.files[0]);
+                                    }
+                                }
+                            }
+                            fileInput.click();
+                            // ***END OF FILE CHOOSER CODE***
+                        } 
+                        else if(e.which == 32) {
+                            // console.log(this.getFeatureSelected().getId());
+                            console.log(this.vectorSource.getFeatures().length);
+                        }        
+                    }.bind(this));
+                    
+                    delete parentComponent.createMapManager;
+                    return this;
                 },
         
-                // // Highlight waypoints 
-                // displayFeatureInfo: function() {
-                //     let highlight;
-                //     return function(feature) {
-                //         if (feature !== highlight) {
-                //             const featureSelected = this.getFeatureSelected();
-                //             if (highlight && (highlight !== featureSelected)) {
-                //                 highlight.setStyle(this.getFeatureDefaultStyle());
-                //             }
-                //             if (feature) {
-                //                 feature.setStyle(this.getFeatureHighlightStyle(feature.get('name')));
-                //             }
-                //             highlight = feature;
-                //         }
-                //     }
-                // }(),
+                displayFeatureInfo: function() {
+                    let highlight;
+                    return function(feature) {
+                        if (feature !== highlight) {
+                            const featureSelected = this.getFeatureSelected();
+                            if (highlight && (highlight !== featureSelected)) {
+                                highlight.setStyle(getFeatureDefaultStyle());
+                            }
+                            if (feature) {
+                                feature.setStyle(getFeatureHighlightStyle(feature.get('name')));
+                            }
+                            highlight = feature;
+                        }
+                    }
+                }(),
             
-                // getFeatureIndicated: function(pixel) {
-                //     const feature = this.map.forEachFeatureAtPixel(pixel, function (feature) {
-                //         return feature;
-                //     });
-                //     return feature;
-                // },
+                getFeatureIndicated: function(pixel) {
+                    const feature = map.forEachFeatureAtPixel(pixel, function (feature) {
+                        return feature;
+                    });
+                    return feature;
+                },
         
-                // getFeatureSelected: function() {
-                //     return this.selectInteraction.getFeatures().item(0);
-                // },
+                getFeatureSelected: function() {
+                    return selectInteraction.getFeatures().item(0);
+                },
         
-                // importFeatures: function(data) {
-                //     const format = new ol.format.KML();
-                //     const features = format.readFeatures(data, {featureProjection: this.map.getView().getProjection()});
-                //     this.addFeatures(features);
-                // },
+                importFeatures: function(data) {
+                    const format = new ol.format.KML();
+                    const features = format.readFeatures(data, {featureProjection: map.getView().getProjection()});
+                    this.addFeatures(features);
+                },
         
-                // getKMLFromFeatures: function(features) {
-                //     const format = new ol.format.KML();
-                //     const kml = format.writeFeatures(features, {featureProjection: this.map.getView().getProjection()});
-                //     return kml;
-                // },
-                // getGeoJSONFromFeatures: function(features) {
-                //     const format = new ol.format.GeoJSON();
-                //     const geoJSON = format.writeFeaturesObject(features, {featureProjection: this.map.getView().getProjection()});
-                //     return geoJSON;
-                // },
-                // getFeaturesFromLayer: function(layer) {
-                //     const source = layer.getSource();
-                //     const features = source.getFeatures();
-                //     return features;
-                // },
+                getKMLFromFeatures: function(features) {
+                    const format = new ol.format.KML();
+                    const kml = format.writeFeatures(features, {featureProjection: map.getView().getProjection()});
+                    return kml;
+                },
+                getGeoJSONFromFeatures: function(features) {
+                    const format = new ol.format.GeoJSON();
+                    const geoJSON = format.writeFeaturesObject(features, {featureProjection: map.getView().getProjection()});
+                    return geoJSON;
+                },
+                getFeaturesFromLayer: function(layer) {
+                    const source = layer.getSource();
+                    const features = source.getFeatures();
+                    return features;
+                },
         
-                // exportFeaturesToKml: function(vectorLayer) {
-                //     const geojsonObject = this.getGeoJSONFromFeatures(this.getFeaturesFromLayer(vectorLayer));
-                //     const kml = tokml(geojsonObject);
-                //     const blob = new Blob([kml], {type: "text/plain;charset=utf-8"});
-                //     saveAs(blob, "waypoints"+".kml");
-                // },
+                exportFeaturesToKml: function(vectorLayer) {
+                    const geojsonObject = this.getGeoJSONFromFeatures(this.getFeaturesFromLayer(vectorLayer));
+                    const kml = tokml(geojsonObject);
+                    const blob = new Blob([kml], {type: "text/plain;charset=utf-8"});
+                    saveAs(blob, "waypoints"+".kml");
+                },
         
-                // clearFeatures: function(vectorLayer) {
-                //     const source = vectorLayer.getSource();
-                //     source.clear(true);
-                // },
+                clearFeatures: function(vectorLayer) {
+                    const source = vectorLayer.getSource();
+                    source.clear(true);
+                },
         
                 createFeatureId: function() {
                     let autoFeatureId = 0;
@@ -346,85 +362,127 @@ class Map extends Component {
                     }
                 }(),
         
+                getWaypointFromFeatureData: function(featureId, featureName) {
+                    return {
+                        waypointId: featureId, 
+                        waypointName: featureName
+                    }
+                },
+
                 addFeatures: function(features) {
                     const waypointsCache = [];
                     vectorSource.addFeatures(features);
                     features.map(feature => {
                         const featureId = this.createFeatureId();
                         const featureName = feature.get('name');
-                        // add other waypoint properties here
-                        const waypoint = {
-                            waypointId: featureId, 
-                            waypointName: featureName
-                        };
-                        waypointsCache.push(waypoint);
+                        waypointsCache.push(this.getWaypointFromFeatureData(featureId, featureName));
                         feature.setId(featureId);
                         feature.setStyle(getFeatureDefaultStyle());
                     })
-                    // this.props.fetchWaypoints(waypointsCache);
+                    parentComponent.props.fetchWaypoints(waypointsCache);
                     map.getView().fit(vectorSource.getExtent());
                 },
         
-                // selectFeature: function(featureId) {
-                //     const featureToSelect = this.vectorSource.getFeatureById(featureId);
-                //     const featureSelected = this.getFeatureSelected(); 
-                //     const canDeselect = featureSelected && (featureSelected !== featureToSelect);
-                //     this.selectInteraction.getFeatures().clear();
-                //     this.selectInteraction.getFeatures().push(featureToSelect);
-                //     this.selectInteraction.dispatchEvent({
-                //         type: 'select',
-                //         selected: [featureToSelect],
-                //         deselected: canDeselect ? [featureSelected] : []
-                //     });
-                //     this.map.getView().animate({
-                //         center: featureToSelect.getGeometry().getCoordinates(),
-                //         duration: 1000
-                //     });
-                // },
+                selectFeature: function(featureId) {
+                    const featureToSelect = vectorSource.getFeatureById(featureId);
+                    selectInteraction.getFeatures().clear();
+                    selectInteraction.getFeatures().push(featureToSelect);
+                },
         
                 // deselectFeature: function(featureId) {
-                //     const featureToDeselect = this.vectorSource.getFeatureById(featureId);
+                //     const featureToDeselect = vectorSource.getFeatureById(featureId);
                 //     const featureSelected = this.getFeatureSelected(); 
                 //     if (featureSelected && (featureSelected === featureToDeselect)) {
-                //         this.selectInteraction.getFeatures().clear();
-                //         this.selectInteraction.dispatchEvent({
+                //         selectInteraction.getFeatures().clear();
+                //         selectInteraction.dispatchEvent({
                 //             type: 'select',
                 //             selected: [],
                 //             deselected: [featureToDeselect]
                 //         });
                 //     }
                 // },
+
+                panToFeature: function(featureId) {
+                    map.getView().animate({
+                        center: vectorSource.getFeatureById(featureId).getGeometry().getCoordinates(),
+                        duration: 1000
+                    });
+                },
         
-                // changeFeatureName: function(featureId, featureName) {
-                //     const feature = this.vectorSource.getFeatureById(featureId);
-                //     const featureSelected = this.getFeatureSelected();
-                //     feature.set('name', featureName);
-                //     if (feature === featureSelected) {
-                //         feature.setStyle(this.getFeatureSelectStyle(featureName));
-                //     }
-                // },
+                changeFeatureName: function(featureId, featureName) {
+                    const feature = vectorSource.getFeatureById(featureId);
+                    const featureSelected = this.getFeatureSelected();
+                    feature.set('name', featureName);
+                    if (feature === featureSelected) {
+                        feature.setStyle(getFeatureSelectStyle(featureName));
+                    }
+                },
         
-                // deleteFeature: function(featureId) {
-                //     const feature = this.vectorSource.getFeatureById(featureId); 
-                //     this.vectorSource.removeFeature(feature);
-                //     feature.setStyle(this.getFeatureEmptyStyle());
-                // },
+                deleteFeature: function(featureId) {
+                    const feature = vectorSource.getFeatureById(featureId); 
+                    vectorSource.removeFeature(feature);
+                    feature.setStyle(getFeatureEmptyStyle());
+                },
         
-                // enableAddFeature: function(enable) {
-                //     this.drawInteraction.setActive(enable);
-                // }
+                enableAddFeature: function(enable) {
+                    drawInteraction.setActive(enable);
+                },
+
+                getIsSelectedFeatureChosenUsingMap: function() {
+                    return isSelectedFeatureChosenUsingMap;
+                },
+
+                setIsSelectedFeatureChosenUsingMap: function(selectedUsingMap) {
+                    isSelectedFeatureChosenUsingMap = selectedUsingMap;
+                },
+
+                setFeatureStyleToSelected: function(featureId) {
+                    const feature = vectorSource.getFeatureById(featureId); 
+                    if (feature) {
+                        feature.setStyle(getFeatureSelectStyle(feature.get('name')));
+                    }
+                },
+
+                setFeatureStyleToDeselected: function(featureId) {
+                    const feature = vectorSource.getFeatureById(featureId); 
+                    if (feature) {
+                        feature.setStyle(getFeatureDefaultStyle());
+                    }
+                }
             }
         };
     }
 
     componentDidMount() {
         this.mapManager = this.createMapManager().init();
-        // this.mapManager.parent = this; A MOZE MOZNA UZYC Map?
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        const activeWaypoint = this.props.activeWaypoint;
+        const prevActiveWaypoint = prevProps.activeWaypoint;
+        const mapManager = this.mapManager;
+
+        const activeWaypointId = activeWaypoint ? activeWaypoint.waypointId : -1;
+        const prevActiveWaypointId = prevActiveWaypoint ? prevActiveWaypoint.waypointId : -1;
+        if (activeWaypointId != prevActiveWaypointId) {
+            if (activeWaypoint) {
+                if (!mapManager.getIsSelectedFeatureChosenUsingMap()) {
+                    mapManager.selectFeature(activeWaypoint.waypointId);
+                    mapManager.panToFeature(activeWaypoint.waypointId)
+                }
+                mapManager.setIsSelectedFeatureChosenUsingMap(false);
+
+                mapManager.setFeatureStyleToSelected(activeWaypoint.waypointId);
+                if (prevActiveWaypoint) {
+                    mapManager.setFeatureStyleToDeselected(prevActiveWaypoint.waypointId);
+                }
+            } else if (!activeWaypoint && prevActiveWaypoint) {
+                mapManager.setFeatureStyleToDeselected(prevActiveWaypoint.waypointId);
+            }
+        }
     }
 
     render() {
-        //selectFeature
-
         return (
             <div id="map" className="map"></div>
         )
@@ -433,12 +491,16 @@ class Map extends Component {
 
 function mapStateToProps(state) {
     return {
+        // waypoints: state.waypoints,
         activeWaypoint: state.activeWaypoint
     }
 }
 
 function mapDispatchToProps(dispatch) {
-    return bindActionCreators({fetchWaypoints}, dispatch);
+    return bindActionCreators({
+        fetchWaypoints: fetchWaypoints, 
+        selectWaypoint: selectWaypoint
+    }, dispatch);
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Map);
