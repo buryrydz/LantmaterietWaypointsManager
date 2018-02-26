@@ -1,4 +1,8 @@
 import React, {Component} from 'react';
+import {connect} from 'react-redux';
+import {bindActionCreators} from 'redux';
+import {fetchWaypoints} from '../actions/index';
+import {selectWaypoint} from '../actions/index';
 import '../scss/style.scss';
 import MenuUpper from '../components/menu_upper';
 import Map from '../components/map';
