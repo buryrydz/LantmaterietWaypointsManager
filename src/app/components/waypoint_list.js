@@ -3,16 +3,10 @@ import {connect} from 'react-redux';
 import WaypointListItem from './waypoint_list_item';
 import WaypointListItemActive from './waypoint_list_item_active';
 
- class WaypointList extends Component {
-    constructor(props) {
-        super(props);
-
-        this.renderWaypoint = this.renderWaypoint.bind(this);
-    }
-
-    renderWaypoint(waypoint) {
+export default (props) => {
+    function renderWaypoint(waypoint) {
         const waypointId = waypoint.waypointId;
-        const activeWaypointId = this.props.activeWaypoint ? this.props.activeWaypoint.waypointId : -1;
+        const activeWaypointId = props.activeWaypoint ? props.activeWaypoint.waypointId : -1;
         if (waypointId === activeWaypointId) {
             return (
                 <WaypointListItemActive key={waypointId} waypoint={waypoint} />
@@ -24,20 +18,9 @@ import WaypointListItemActive from './waypoint_list_item_active';
         }
     }
 
-    render() {
-        return (
-            <div>
-                {this.props.waypoints.map(this.renderWaypoint)}
-            </div>
-        )
-    }
+    return (
+        <div>
+            {props.waypoints.map(renderWaypoint)}
+        </div>
+    )
 }
-
-function mapStateToProps(state) {
-    return {
-        waypoints: state.waypoints,
-        activeWaypoint: state.activeWaypoint
-    }
-}
-
-export default connect(mapStateToProps)(WaypointList);

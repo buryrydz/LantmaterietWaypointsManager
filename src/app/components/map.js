@@ -218,7 +218,7 @@ export default class Map extends Component {
                     // przekaz Id oraz nazwe nowego waypointa(?)
                 }.bind(this));
 
-                map.addInteraction(snapInteraction);
+                // map.addInteraction(snapInteraction);
 
                 map.on('pointermove', function(event) {
                     if (event.dragging) {
