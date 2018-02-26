@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
-import WaypointListItem from '../containers/waypoint_list_item';
-import WaypointListItemActive from '../components/waypoint_list_item_active';
+import WaypointListItem from './waypoint_list_item';
+import WaypointListItemActive from './waypoint_list_item_active';
 
  class WaypointList extends Component {
     constructor(props) {
