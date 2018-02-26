@@ -1,18 +1,16 @@
 import React, {Component} from 'react';
-import {connect} from 'react-redux';
-import {bindActionCreators} from 'redux';
-import {fetchWaypoints} from '../actions/index';
-import {selectWaypoint} from '../actions/index';
 import '../scss/map.scss';
 
 
 // In order to work with EPSG:3006 coordinate reference system
 proj4.defs('EPSG:3006', '+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +axis=neu +no_defs');
 
-export default (props) => {
-    let mapManager = null;
+export default class Map extends Component {
+    constructor(props) {
+        super(props);
+    }
 
-    function createMapManager() {
+    createMapManager() {
         let isSelectedFeatureChosenUsingMap = false;
         const defaultFeatureName = 'wpt';
         const projection = ol.proj.get('EPSG:3006');
@@ -220,7 +218,7 @@ export default (props) => {
                     // przekaz Id oraz nazwe nowego waypointa(?)
                 }.bind(this));
 
-                // map.addInteraction(snapInteraction);
+                map.addInteraction(snapInteraction);
 
                 map.on('pointermove', function(event) {
                     if (event.dragging) {
@@ -451,37 +449,39 @@ export default (props) => {
         }
     }
 
-    function componentDidMount() {
-        mapManager = createMapManager().init();
+    componentDidMount() {
+        this.mapManager = this.createMapManager().init();
     }
 
-    // function componentDidUpdate(prevProps, prevState) {
-    //     const activeWaypoint = this.props.activeWaypoint;
-    //     const prevActiveWaypoint = prevProps.activeWaypoint;
-    //     const mapManager = this.mapManager;
+    componentDidUpdate(prevProps, prevState) {
+        const activeWaypoint = this.props.activeWaypoint;
+        const prevActiveWaypoint = prevProps.activeWaypoint;
+        const mapManager = this.mapManager;
 
-    //     const activeWaypointId = activeWaypoint ? activeWaypoint.waypointId : -1;
-    //     const prevActiveWaypointId = prevActiveWaypoint ? prevActiveWaypoint.waypointId : -1;
-    //     if (activeWaypointId != prevActiveWaypointId) {
-    //         if (activeWaypoint) {
-    //             if (!mapManager.getIsSelectedFeatureChosenUsingMap()) {
-    //                 mapManager.selectFeature(activeWaypoint.waypointId);
-    //                 mapManager.panToFeature(activeWaypoint.waypointId)
-    //             }
-    //             mapManager.setIsSelectedFeatureChosenUsingMap(false);
+        const activeWaypointId = activeWaypoint ? activeWaypoint.waypointId : -1;
+        const prevActiveWaypointId = prevActiveWaypoint ? prevActiveWaypoint.waypointId : -1;
+        if (activeWaypointId != prevActiveWaypointId) {
+            if (activeWaypoint) {
+                if (!mapManager.getIsSelectedFeatureChosenUsingMap()) {
+                    mapManager.selectFeature(activeWaypoint.waypointId);
+                    mapManager.panToFeature(activeWaypoint.waypointId)
+                }
+                mapManager.setIsSelectedFeatureChosenUsingMap(false);
 
-    //             mapManager.setFeatureStyleToSelected(activeWaypoint.waypointId);
-    //             if (prevActiveWaypoint) {
-    //                 mapManager.setFeatureStyleToDeselected(prevActiveWaypoint.waypointId);
-    //             }
-    //         } else if (!activeWaypoint && prevActiveWaypoint) {
-    //             mapManager.setFeatureStyleToDeselected(prevActiveWaypoint.waypointId);
-    //         }
-    //     }
-    // }
+                mapManager.setFeatureStyleToSelected(activeWaypoint.waypointId);
+                if (prevActiveWaypoint) {
+                    mapManager.setFeatureStyleToDeselected(prevActiveWaypoint.waypointId);
+                }
+            } else if (!activeWaypoint && prevActiveWaypoint) {
+                mapManager.setFeatureStyleToDeselected(prevActiveWaypoint.waypointId);
+            }
+        }
+    }
 
-    return (
-        <div id="map" className="map"></div>
-    )
+    render() {
+        return (
+            <div id="map" className="map"></div>
+        )
+    }
 }
 
