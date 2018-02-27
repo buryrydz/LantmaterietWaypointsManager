@@ -9,13 +9,32 @@ import Map from '../components/map';
 import MenuRight from './menu_right';
 
 class App extends Component {
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            uiState: {
+                addWaypointEnabled: false, 
+                importWaypointsEnabled: false,
+                exportWaypointsEnabled: false,
+                clearWaypointsEnabled: false,
+                changeWaypointNameEnabled: false,
+                deleteWaypointEnabled: false
+            }
+        };
+    }
+
+    enableAddWaypoint() {
+
+    }
+
     render() {
         return (
             <div>
                 <MenuUpper />
                 <div className="row">
                     <div className="col-sm-9 p-0">
-                        <Map activeWaypoint={this.props.activeWaypoint} fetchWaypoints={this.props.fetchWaypoints} selectWaypoint={this.props.selectWaypoint} />
+                        <Map uiState={this.state.uiState} activeWaypoint={this.props.activeWaypoint} fetchWaypoints={this.props.fetchWaypoints} selectWaypoint={this.props.selectWaypoint} />
                     </div>
                     <div className="col-sm-3 p-0">
                         <MenuRight />
