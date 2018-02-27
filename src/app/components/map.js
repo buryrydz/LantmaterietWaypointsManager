@@ -224,16 +224,8 @@ export default class Map extends Component {
                     if (event.dragging) {
                         return;
                     }
-                    const pixel = event.pixel;
-                    const featureSelected = this.getFeatureSelected();
-                    const featureIndicated = this.getFeatureIndicated(pixel);
-                    const isFeatureSelectedIndicated = (featureSelected && featureIndicated && (featureSelected == featureIndicated)) 
-                        ? true : false; 
-                    const isAnyFeatureSelected = (selectInteraction.getFeatures().getLength() > 0)
-                        ? true : false;
-                    if (!isAnyFeatureSelected || !isFeatureSelectedIndicated){
-                        this.displayFeatureInfo(featureIndicated); 
-                    }
+                    const featureIndicated = this.getFeatureIndicated(event.pixel);
+                    this.displayFeatureInfo(featureIndicated); 
                     map.getTargetElement().style.cursor = featureIndicated ? 'pointer' : '';
                 }.bind(this));
 
@@ -281,16 +273,22 @@ export default class Map extends Component {
     
             displayFeatureInfo: function() {
                 let highlight;
-                return function(feature) {
-                    if (feature !== highlight) {
-                        const featureSelected = this.getFeatureSelected();
-                        if (highlight && (highlight !== featureSelected)) {
-                            highlight.setStyle(getFeatureDefaultStyle());
+                return function(featureIndicated) {
+                    const featureSelected = this.getFeatureSelected();
+                    const isFeatureSelectedIndicated = (featureSelected && featureIndicated && (featureSelected == featureIndicated)) 
+                        ? true : false; 
+                    const isAnyFeatureSelected = (selectInteraction.getFeatures().getLength() > 0)
+                        ? true : false;
+                    if (!isAnyFeatureSelected || !isFeatureSelectedIndicated){
+                        if (featureIndicated !== highlight) {
+                            if (highlight && (highlight !== featureSelected)) {
+                                highlight.setStyle(getFeatureDefaultStyle());
+                            }
+                            if (featureIndicated) {
+                                featureIndicated.setStyle(getFeatureHighlightStyle(featureIndicated.get('name')));
+                            }
+                            highlight = featureIndicated;
                         }
-                        if (feature) {
-                            feature.setStyle(getFeatureHighlightStyle(feature.get('name')));
-                        }
-                        highlight = feature;
                     }
                 }
             }(),

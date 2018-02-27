@@ -15,7 +15,7 @@ class App extends Component {
                 <MenuUpper />
                 <div className="row">
                     <div className="col-sm-9 p-0">
-                        <Map fetchWaypoints={this.props.fetchWaypoints} selectWaypoint={this.props.selectWaypoint} />
+                        <Map activeWaypoint={this.props.activeWaypoint} fetchWaypoints={this.props.fetchWaypoints} selectWaypoint={this.props.selectWaypoint} />
                     </div>
                     <div className="col-sm-3 p-0">
                         <MenuRight />
