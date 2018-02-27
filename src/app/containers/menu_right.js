@@ -1,5 +1,7 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
+import {bindActionCreators} from 'redux';
+import {selectWaypoint} from '../actions/index';
 import SearchBar from '../components/search_bar';
 import WaypointList from '../components/waypoint_list';
 
@@ -15,7 +17,7 @@ class MenuRight extends Component {
                     <SearchBar />
                 </div>
                 <div className="card-body p-1">
-                    <WaypointList waypoints={this.props.waypoints} activeWaypoint={this.props.activeWaypoint} />
+                    <WaypointList waypoints={this.props.waypoints} activeWaypoint={this.props.activeWaypoint} selectWaypoint={this.props.selectWaypoint} />
                 </div>
             </div>
         )
@@ -29,4 +31,8 @@ function mapStateToProps(state) {
     }
 }
 
-export default connect(mapStateToProps)(MenuRight);
+function mapDispatchToProps(dispatch) {
+    return bindActionCreators({selectWaypoint}, dispatch);
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(MenuRight);

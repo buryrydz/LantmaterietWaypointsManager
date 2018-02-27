@@ -13,7 +13,7 @@ export default (props) => {
             )
         } else {
             return (
-                <WaypointListItem key={waypointId} waypoint={waypoint} />
+                <WaypointListItem key={waypointId} waypoint={waypoint} selectWaypoint={props.selectWaypoint} />
             )
         }
     }
