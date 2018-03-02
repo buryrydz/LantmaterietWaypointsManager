@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default (props) => {
+const WaypointListItemActive = (props) => {
     return (
         <div className="input-group justify-content-between p-1">
             <input type="text" className="form-control" placeholder="waypoint's name" value={props.waypoint.waypointName} readOnly></input>
@@ -12,3 +12,5 @@ export default (props) => {
         </div>
     )
 }
+
+export default WaypointListItemActive;

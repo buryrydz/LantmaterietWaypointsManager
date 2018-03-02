@@ -3,7 +3,7 @@ import {connect} from 'react-redux';
 import WaypointListItem from './waypoint_list_item';
 import WaypointListItemActive from './waypoint_list_item_active';
 
-export default (props) => {
+const WaypointList = (props) => {
     function renderWaypoint(waypoint) {
         const waypointId = waypoint.waypointId;
         const activeWaypointId = props.activeWaypoint ? props.activeWaypoint.waypointId : -1;
@@ -13,7 +13,7 @@ export default (props) => {
             )
         } else {
             return (
-                <WaypointListItem key={waypointId} waypoint={waypoint} selectWaypoint={props.selectWaypoint} />
+                <WaypointListItem key={waypointId} waypoint={waypoint} selectWaypoint={props.reduxActions.selectWaypoint} />
             )
         }
     }
@@ -24,3 +24,5 @@ export default (props) => {
         </div>
     )
 }
+
+export default WaypointList;

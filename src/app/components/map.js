@@ -5,7 +5,7 @@ import '../scss/map.scss';
 // In order to work with EPSG:3006 coordinate reference system
 proj4.defs('EPSG:3006', '+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +axis=neu +no_defs');
 
-export default class Map extends Component {
+class Map extends Component {
     constructor(props) {
         super(props);
     }
@@ -194,14 +194,14 @@ export default class Map extends Component {
                         isSelectedFeatureChosenUsingMap = true;
                         const featureSelectedId = featureSelected.getId();
                         const featureSelectedName = featureSelected.get('name');
-                        parentComponent.props.selectWaypoint(this.getWaypointFromFeatureData(featureSelectedId, featureSelectedName));
+                        parentComponent.props.reduxActions.selectWaypoint(this.getWaypointFromFeatureData(featureSelectedId, featureSelectedName));
                     } else if(isSelected && isDeselected) {
                         isSelectedFeatureChosenUsingMap = true;
                         const featureSelectedId = featureSelected.getId();
                         const featureSelectedName = featureSelected.get('name');
-                        parentComponent.props.selectWaypoint(this.getWaypointFromFeatureData(featureSelectedId, featureSelectedName));
+                        parentComponent.props.reduxActions.selectWaypoint(this.getWaypointFromFeatureData(featureSelectedId, featureSelectedName));
                     } else if(!isSelected && isDeselected) {
-                        parentComponent.props.selectWaypoint(null);
+                        parentComponent.props.reduxActions.selectWaypoint(null);
                     }
                 }.bind(this));
 
@@ -209,13 +209,13 @@ export default class Map extends Component {
 
                 map.addInteraction(drawInteraction);
                 drawInteraction.on('drawend', function(event) {
-                    this.enableAddFeature(false);
                     const feature = event.feature;
                     const featureId = this.createFeatureId();
+                    const featureName = defaultFeatureName;
                     feature.setId(featureId);
-                    feature.set('name', defaultFeatureName);
-                    // TO DO... powiadom inne komponenty ze dodano nowy waypoint,
-                    // przekaz Id oraz nazwe nowego waypointa(?)
+                    feature.set('name', featureName);
+                    parentComponent.props.reduxActions.addNewWaypoint(this.getWaypointFromFeatureData(featureId, featureName))
+                    parentComponent.props.uiActions.disableAddWaypoint();
                 }.bind(this));
 
                 // map.addInteraction(snapInteraction);
@@ -374,7 +374,7 @@ export default class Map extends Component {
                     feature.setId(featureId);
                     feature.setStyle(getFeatureDefaultStyle());
                 })
-                parentComponent.props.fetchWaypoints(waypointsCache);
+                parentComponent.props.reduxActions.fetchWaypoints(waypointsCache);
                 map.getView().fit(vectorSource.getExtent());
             },
     
@@ -452,10 +452,11 @@ export default class Map extends Component {
     }
 
     componentDidUpdate(prevProps, prevState) {
-        const activeWaypoint = this.props.activeWaypoint;
-        const prevActiveWaypoint = prevProps.activeWaypoint;
         const mapManager = this.mapManager;
 
+        // handling selection
+        const activeWaypoint = this.props.activeWaypoint;
+        const prevActiveWaypoint = prevProps.activeWaypoint;
         const activeWaypointId = activeWaypoint ? activeWaypoint.waypointId : -1;
         const prevActiveWaypointId = prevActiveWaypoint ? prevActiveWaypoint.waypointId : -1;
         if (activeWaypointId != prevActiveWaypointId) {
@@ -474,6 +475,17 @@ export default class Map extends Component {
                 mapManager.setFeatureStyleToDeselected(prevActiveWaypoint.waypointId);
             }
         }
+
+        // handling add waypoint
+        const addWaypointEnabled = this.props.uiState.addWaypointEnabled;
+        const prevAddWaypointEnabled = prevProps.uiState.addWaypointEnabled;
+        if (addWaypointEnabled != prevAddWaypointEnabled) {
+            if (addWaypointEnabled) {
+                mapManager.enableAddFeature(true);
+            } else {
+                mapManager.enableAddFeature(false);
+            }
+        }
     }
 
     render() {
@@ -482,4 +494,6 @@ export default class Map extends Component {
         )
     }
 }
+
+export default Map;
 

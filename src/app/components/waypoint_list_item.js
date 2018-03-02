@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default (props) => {
+const WaypointListItem = (props) => {
     return (
         <div className="input-group p-1">
             <button
@@ -12,3 +12,5 @@ export default (props) => {
         </div>
     )
 }
+
+export default WaypointListItem;

@@ -1,8 +1,7 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
-import {fetchWaypoints} from '../actions/index';
-import {selectWaypoint} from '../actions/index';
+import * as reduxActions from '../actions/index';
 import '../scss/style.scss';
 import MenuUpper from '../components/menu_upper';
 import Map from '../components/map';
@@ -12,29 +11,38 @@ class App extends Component {
     constructor(props) {
         super(props);
 
-        this.state = {
-            uiState: {
-                addWaypointEnabled: false, 
-                importWaypointsEnabled: false,
-                exportWaypointsEnabled: false,
-                clearWaypointsEnabled: false,
-                changeWaypointNameEnabled: false,
-                deleteWaypointEnabled: false
+        this.uiActions = {
+            enableAddWaypoint: () => {
+                this.setState({addWaypointEnabled: true})
+            },
+            disableAddWaypoint: () => {
+                this.setState({addWaypointEnabled: false})
             }
+        };
+
+        this.state = {
+            addWaypointEnabled: false, 
+            importWaypointsEnabled: false,
+            exportWaypointsEnabled: false,
+            clearWaypointsEnabled: false,
+            changeWaypointNameEnabled: false,
+            deleteWaypointEnabled: false
         };
     }
 
-    enableAddWaypoint() {
-
-    }
-
     render() {
+        console.log('app')
         return (
             <div>
-                <MenuUpper />
+                <MenuUpper uiActions={this.uiActions} />
                 <div className="row">
                     <div className="col-sm-9 p-0">
-                        <Map uiState={this.state.uiState} activeWaypoint={this.props.activeWaypoint} fetchWaypoints={this.props.fetchWaypoints} selectWaypoint={this.props.selectWaypoint} />
+                        <Map 
+                            uiState={this.state} 
+                            activeWaypoint={this.props.activeWaypoint} 
+                            uiActions={this.uiActions} 
+                            reduxActions={this.props.reduxActions}
+                        />
                     </div>
                     <div className="col-sm-3 p-0">
                         <MenuRight />
@@ -53,10 +61,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-    return bindActionCreators({
-        fetchWaypoints: fetchWaypoints, 
-        selectWaypoint: selectWaypoint
-    }, dispatch);
+    return {reduxActions: bindActionCreators(reduxActions, dispatch)};
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(App);
