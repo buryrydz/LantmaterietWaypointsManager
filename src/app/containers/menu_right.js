@@ -27,18 +27,26 @@ class MenuRight extends Component {
 
     render() {
         console.log('menu right')   // TO DO... wykasowac!
+
         const onSearchTermChanged = _.debounce(searchTerm => {
             this.onSearchTermChanged(searchTerm);
         }, 300);
 
+        const presentationalWaypoints = this.updatePresentationalWaypoints();
+
         return (
             <div className="card">
                 <div className="card-header p-1">
-                    <SearchBar onSearchTermChanged={onSearchTermChanged} />
+                    <SearchBar 
+                        presentationalWaypoints={presentationalWaypoints} 
+                        activeWaypoint={this.props.activeWaypoint} 
+                        waypointsActions={this.props.waypointsActions} 
+                        onSearchTermChanged={onSearchTermChanged} 
+                    />
                 </div>
                 <div className="card-body p-1">
                     <WaypointList 
-                        presentationalWaypoints={this.updatePresentationalWaypoints()} 
+                        presentationalWaypoints={presentationalWaypoints} 
                         activeWaypoint={this.props.activeWaypoint} 
                         waypointsActions={this.props.waypointsActions} 
                     />
