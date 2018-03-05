@@ -1,6 +1,9 @@
 import React, {Component} from 'react';
+import {connect} from 'react-redux';
+import {bindActionCreators} from 'redux';
+import * as waypointsActions from '../actions/waypoints_actions';
+import * as uiActions from '../actions/ui_actions';
 import '../scss/map.scss';
-
 
 // In order to work with EPSG:3006 coordinate reference system
 proj4.defs('EPSG:3006', '+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +axis=neu +no_defs');
@@ -194,14 +197,14 @@ class Map extends Component {
                         isSelectedFeatureChosenUsingMap = true;
                         const featureSelectedId = featureSelected.getId();
                         const featureSelectedName = featureSelected.get('name');
-                        parentComponent.props.reduxActions.selectWaypoint(this.getWaypointFromFeatureData(featureSelectedId, featureSelectedName));
+                        parentComponent.props.waypointsActions.selectWaypoint(this.getWaypointFromFeatureData(featureSelectedId, featureSelectedName));
                     } else if(isSelected && isDeselected) {
                         isSelectedFeatureChosenUsingMap = true;
                         const featureSelectedId = featureSelected.getId();
                         const featureSelectedName = featureSelected.get('name');
-                        parentComponent.props.reduxActions.selectWaypoint(this.getWaypointFromFeatureData(featureSelectedId, featureSelectedName));
+                        parentComponent.props.waypointsActions.selectWaypoint(this.getWaypointFromFeatureData(featureSelectedId, featureSelectedName));
                     } else if(!isSelected && isDeselected) {
-                        parentComponent.props.reduxActions.selectWaypoint(null);
+                        parentComponent.props.waypointsActions.selectWaypoint(null);
                     }
                 }.bind(this));
 
@@ -214,8 +217,7 @@ class Map extends Component {
                     const featureName = defaultFeatureName;
                     feature.setId(featureId);
                     feature.set('name', featureName);
-                    parentComponent.props.reduxActions.addNewWaypoint(this.getWaypointFromFeatureData(featureId, featureName))
-                    parentComponent.props.uiActions.disableAddWaypoint();
+                    parentComponent.props.uiActions.endDrawWaypoint(this.getWaypointFromFeatureData(featureId, featureName));
                 }.bind(this));
 
                 // map.addInteraction(snapInteraction);
@@ -263,7 +265,7 @@ class Map extends Component {
                     } 
                     else if(e.which == 32) {
                         // console.log(this.getFeatureSelected().getId());
-                        console.log(this.vectorSource.getFeatures().length);
+                        // console.log(this.vectorSource.getFeatures().length);
                     }        
                 }.bind(this));
                 
@@ -374,7 +376,7 @@ class Map extends Component {
                     feature.setId(featureId);
                     feature.setStyle(getFeatureDefaultStyle());
                 })
-                parentComponent.props.reduxActions.fetchWaypoints(waypointsCache);
+                parentComponent.props.waypointsActions.fetchWaypoints(waypointsCache);
                 map.getView().fit(vectorSource.getExtent());
             },
     
@@ -495,5 +497,20 @@ class Map extends Component {
     }
 }
 
-export default Map;
+function mapStateToProps(state) {
+    return {
+        // waypoints: state.waypoints,
+        activeWaypoint: state.activeWaypoint,
+        uiState: state.uiState
+    }
+}
+
+function mapDispatchToProps(dispatch) {
+    return {
+        waypointsActions: bindActionCreators(waypointsActions, dispatch),
+        uiActions: bindActionCreators(uiActions, dispatch)
+    };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Map);
 

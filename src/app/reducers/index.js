@@ -1,10 +1,12 @@
 import {combineReducers} from 'redux';
-import WaypointsReducer from './reducer_waypoints';
-import ActiveWaypointReducer from './reducer_active_waypoint';
+import WaypointsReducer from './waypoints_reducer';
+import ActiveWaypointReducer from './active_waypoint_reducer';
+import UiReducer from './ui_reducer';
 
 const rootReducer = combineReducers({
     waypoints: WaypointsReducer,
-    activeWaypoint: ActiveWaypointReducer
+    activeWaypoint: ActiveWaypointReducer,
+    uiState: UiReducer
 });
 
 export default rootReducer;

@@ -1,4 +1,4 @@
-import {SELECT_WAYPOINT} from '../actions/index';
+import {SELECT_WAYPOINT} from '../actions/waypoints_actions';
 
 export default function(state = null, action) {
     switch(action.type) {

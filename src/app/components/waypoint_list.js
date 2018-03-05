@@ -13,14 +13,14 @@ const WaypointList = (props) => {
             )
         } else {
             return (
-                <WaypointListItem key={waypointId} waypoint={waypoint} selectWaypoint={props.reduxActions.selectWaypoint} />
+                <WaypointListItem key={waypointId} waypoint={waypoint} selectWaypoint={props.waypointsActions.selectWaypoint} />
             )
         }
     }
 
     return (
         <div>
-            {props.waypoints.map(renderWaypoint)}
+            {props.presentationalWaypoints.map(renderWaypoint)}
         </div>
     )
 }
