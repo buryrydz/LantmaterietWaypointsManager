@@ -15,6 +15,7 @@ class Map extends Component {
 
     createMapManager() {
         let isSelectedFeatureChosenUsingMap = false;
+        const fileInput = document.getElementById('file-input');
         const defaultFeatureName = 'wpt';
         const projection = ol.proj.get('EPSG:3006');
         const extent = [ -1200000, 4700000, 2600000, 8500000 ];
@@ -233,46 +234,43 @@ class Map extends Component {
 
                 this.enableAddFeature(false);
 
-                $(document).keypress(function(e) {
-                    if(e.which == 13) {
-                        // this.enableAddFeature(true);
-        
-                        // ***FILE CHOOSER CODE***
-                        const mapManager = this;
-                        const fileInput = document.getElementById('file-input');
-                        fileInput.addEventListener("change", handleFiles, false);
-                        function handleFiles(){
-                            // const fileInput = document.getElementById('file-input');
-                            const filePath = this.value;
-                            const allowedExtensions = /(\.kml)$/i;
-                            if(!allowedExtensions.exec(filePath)){
-                                alert('Please upload file having extension .kml only');
-                                this.value = '';
-                                return false;
-                            } else{
-                                if (this.files && this.files[0]) {
-                                    const reader = new FileReader();
-                                    reader.onload = function(event) {
-                                        const dataURL = reader.result;
-                                        mapManager.importFeatures(dataURL);
-                                    };
-                                    reader.readAsText(this.files[0]);
-                                }
-                            }
+                const mapManager = this;
+                fileInput.addEventListener("change", handleFiles, false);
+                function handleFiles(){
+                    // const fileInput = document.getElementById('file-input');
+                    const filePath = this.value;
+                    const allowedExtensions = /(\.kml)$/i;
+                    if(!allowedExtensions.exec(filePath)){
+                        alert('Please upload file having extension .kml only');
+                        this.value = '';
+                        return false;
+                    } else{
+                        if (this.files && this.files[0]) {
+                            const reader = new FileReader();
+                            reader.onload = function(event) {
+                                const dataURL = reader.result;
+                                mapManager.importFeatures(dataURL);
+                            };
+                            reader.readAsText(this.files[0]);
                         }
-                        fileInput.click();
-                        // ***END OF FILE CHOOSER CODE***
-                    } 
-                    else if(e.which == 32) {
-                        // console.log(this.getFeatureSelected().getId());
-                        // console.log(this.vectorSource.getFeatures().length);
-                    }        
-                }.bind(this));
+                    }
+                }
+
+                // $(document).keypress(function(e) {
+                //     if(e.which == 13) {
+
+                //     }       
+                // }.bind(this));
                 
                 delete parentComponent.createMapManager;
                 return this;
             },
     
+            readKmlFile: function() {
+                parentComponent.props.uiActions.endImportWaypoints();
+                fileInput.click();
+            },
+
             displayFeatureInfo: function() {
                 let highlight;
                 return function(featureIndicated) {
@@ -328,16 +326,21 @@ class Map extends Component {
                 return features;
             },
     
-            exportFeaturesToKml: function(vectorLayer) {
+            exportFeaturesToKml: function() {
                 const geojsonObject = this.getGeoJSONFromFeatures(this.getFeaturesFromLayer(vectorLayer));
                 const kml = tokml(geojsonObject);
                 const blob = new Blob([kml], {type: "text/plain;charset=utf-8"});
                 saveAs(blob, "waypoints"+".kml");
+                parentComponent.props.uiActions.endExportWaypoints();
             },
     
-            clearFeatures: function(vectorLayer) {
+            clearFeatures: function() {
                 const source = vectorLayer.getSource();
                 source.clear(true);
+                if (selectInteraction) {
+                    selectInteraction.getFeatures().clear();
+                }
+                parentComponent.props.uiActions.endClearWaypoints();
             },
     
             createFeatureId: function() {
@@ -456,7 +459,7 @@ class Map extends Component {
     componentDidUpdate(prevProps, prevState) {
         const mapManager = this.mapManager;
 
-        // handling selection
+        // handle selection
         const activeWaypoint = this.props.activeWaypoint;
         const prevActiveWaypoint = prevProps.activeWaypoint;
         const activeWaypointId = activeWaypoint ? activeWaypoint.waypointId : -1;
@@ -478,7 +481,7 @@ class Map extends Component {
             }
         }
 
-        // handling add waypoint
+        // handle add waypoint
         const addWaypointEnabled = this.props.uiState.addWaypointEnabled;
         const prevAddWaypointEnabled = prevProps.uiState.addWaypointEnabled;
         if (addWaypointEnabled != prevAddWaypointEnabled) {
@@ -486,6 +489,33 @@ class Map extends Component {
                 mapManager.enableAddFeature(true);
             } else {
                 mapManager.enableAddFeature(false);
+            }
+        }
+
+        // handle import waypoints
+        const importWaypointsEnabled = this.props.uiState.importWaypointsEnabled;
+        const prevImportWaypointsEnabled = prevProps.uiState.importWaypointsEnabled;
+        if (importWaypointsEnabled != prevImportWaypointsEnabled) {
+            if (importWaypointsEnabled) {
+                mapManager.readKmlFile();
+            }
+        }
+
+        // handle export waypoints
+        const exportWaypointsEnabled = this.props.uiState.exportWaypointsEnabled;
+        const prevExportWaypointsEnabled = prevProps.uiState.exportWaypointsEnabled;
+        if (exportWaypointsEnabled != prevExportWaypointsEnabled) {
+            if (exportWaypointsEnabled) {
+                mapManager.exportFeaturesToKml();
+            }
+        }
+
+        // handle clear waypoints
+        const clearWaypointsEnabled = this.props.uiState.clearWaypointsEnabled;
+        const prevClearWaypointsEnabled = prevProps.uiState.clearWaypointsEnabled;
+        if (clearWaypointsEnabled != prevClearWaypointsEnabled) {
+            if (clearWaypointsEnabled) {
+                mapManager.clearFeatures();
             }
         }
     }
