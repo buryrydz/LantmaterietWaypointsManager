@@ -6,7 +6,11 @@ import {
     START_EXPORT_WAYPOINTS,
     END_EXPORT_WAYPOINTS,
     START_CLEAR_WAYPOINTS,
-    END_CLEAR_WAYPOINTS} from '../actions/ui_actions';
+    END_CLEAR_WAYPOINTS,
+    START_CHANGE_WAYPOINT_NAME,
+    END_CHANGE_WAYPOINT_NAME,
+    START_DELETE_WAYPOINT,
+    END_DELETE_WAYPOINT} from '../actions/ui_actions';
 
 const uiState = {
     addWaypointEnabled: false, 
@@ -14,7 +18,10 @@ const uiState = {
     exportWaypointsEnabled: false,
     clearWaypointsEnabled: false,
     changeWaypointNameEnabled: false,
-    deleteWaypointEnabled: false
+    changedWaypointId: -1,
+    changedWaypointNewName: "",
+    deleteWaypointEnabled: false,
+    deletedWaypointId: -1
 }
 
 export default function(state=uiState, action) {
@@ -51,6 +58,25 @@ export default function(state=uiState, action) {
             return Object.assign({}, state, {
                 clearWaypointsEnabled: false
             });
+        case START_CHANGE_WAYPOINT_NAME:
+            return Object.assign({}, state, {
+                changeWaypointNameEnabled: true,
+                changedWaypointId: action.waypointId,
+                changedWaypointNewName: action.newWaypointName
+            });
+        case END_CHANGE_WAYPOINT_NAME:
+            return Object.assign({}, state, {
+                changeWaypointNameEnabled: false
+            });
+        case START_DELETE_WAYPOINT:
+            return Object.assign({}, state, {
+                deleteWaypointEnabled: true,
+                deletedWaypointId: action.waypointId
+            })
+        case END_DELETE_WAYPOINT:
+            return Object.assign({}, state, {
+                deleteWaypointEnabled: false
+            })
     }
 
     return state;

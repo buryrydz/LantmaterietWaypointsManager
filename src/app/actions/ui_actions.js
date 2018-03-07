@@ -5,7 +5,11 @@ export const END_IMPORT_WAYPOINTS = 'END_IMPORT_WAYPOINTS';
 export const START_EXPORT_WAYPOINTS = 'START_EXPORT_WAYPOINTS';
 export const END_EXPORT_WAYPOINTS = 'END_EXPORT_WAYPOINTS';
 export const START_CLEAR_WAYPOINTS = 'START_CLEAR_WAYPOINTS'; 
-export const END_CLEAR_WAYPOINTS = 'END_CLEAR_WAYPOINTS'; 
+export const END_CLEAR_WAYPOINTS = 'END_CLEAR_WAYPOINTS';
+export const START_CHANGE_WAYPOINT_NAME ='START_CHANGE_WAYPOINT_NAME';
+export const END_CHANGE_WAYPOINT_NAME ='END_CHANGE_WAYPOINT_NAME';
+export const START_DELETE_WAYPOINT = 'START_DELETE_WAYPOINT';
+export const END_DELETE_WAYPOINT = 'END_DELETE_WAYPOINT';
 
 export function startDrawWaypoint() {
     return {
@@ -53,5 +57,35 @@ export function startClearWaypoints() {
 export function endClearWaypoints() {
     return {
         type: END_CLEAR_WAYPOINTS
+    }
+}
+
+export function startChangeWaypointName(waypointId, newWaypointName) {
+    return {
+        type: START_CHANGE_WAYPOINT_NAME,
+        waypointId: waypointId,
+        newWaypointName: newWaypointName
+    }
+}
+
+export function endChangeWaypointName(waypointId, newWaypointName) {
+    return {
+        type: END_CHANGE_WAYPOINT_NAME,
+        waypointId: waypointId,
+        newWaypointName: newWaypointName
+    }
+}
+
+export function startDeleteWaypoint(waypointId) {
+    return {
+        type: START_DELETE_WAYPOINT,
+        waypointId: waypointId
+    }
+}
+
+export function endDeleteWaypoint(waypointId) {
+    return {
+        type: END_DELETE_WAYPOINT,
+        waypointId: waypointId
     }
 }

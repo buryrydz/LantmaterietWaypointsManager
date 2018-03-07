@@ -416,12 +416,14 @@ class Map extends Component {
                 if (feature === featureSelected) {
                     feature.setStyle(getFeatureSelectStyle(featureName));
                 }
+                parentComponent.props.uiActions.endChangeWaypointName(featureId, featureName);
             },
     
             deleteFeature: function(featureId) {
                 const feature = vectorSource.getFeatureById(featureId); 
                 vectorSource.removeFeature(feature);
                 feature.setStyle(getFeatureEmptyStyle());
+                parentComponent.props.uiActions.endDeleteWaypoint(featureId);
             },
     
             enableAddFeature: function(enable) {
@@ -516,6 +518,24 @@ class Map extends Component {
         if (clearWaypointsEnabled != prevClearWaypointsEnabled) {
             if (clearWaypointsEnabled) {
                 mapManager.clearFeatures();
+            }
+        }
+
+        // handle change waypoint name
+        const changeWaypointNameEnabled = this.props.uiState.changeWaypointNameEnabled;
+        const prevChangeWaypointNameEnabled = prevProps.uiState.changeWaypointNameEnabled;
+        if (changeWaypointNameEnabled != prevChangeWaypointNameEnabled) {
+            if (changeWaypointNameEnabled) {
+                mapManager.changeFeatureName(this.props.uiState.changedWaypointId, this.props.uiState.changedWaypointNewName);
+            }
+        }
+
+        // handle delete waypoint
+        const deleteWaypointEnabled = this.props.uiState.deleteWaypointEnabled;
+        const prevDeleteWaypointEnabled = prevProps.uiState.deleteWaypointEnabled;
+        if (deleteWaypointEnabled != prevDeleteWaypointEnabled) {
+            if (deleteWaypointEnabled) {
+                mapManager.deleteFeature(this.props.uiState.deletedWaypointId)
             }
         }
     }

@@ -3,6 +3,7 @@ import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 import _ from 'lodash';
 import * as waypointsActions from '../actions/waypoints_actions';
+import * as uiActions from '../actions/ui_actions';
 import SearchBar from '../components/search_bar';
 import WaypointList from '../components/waypoint_list';
 
@@ -49,6 +50,7 @@ class MenuRight extends Component {
                         presentationalWaypoints={presentationalWaypoints} 
                         activeWaypoint={this.props.activeWaypoint} 
                         waypointsActions={this.props.waypointsActions} 
+                        uiActions={this.props.uiActions}
                     />
                 </div>
             </div>
@@ -64,7 +66,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-    return {waypointsActions: bindActionCreators(waypointsActions, dispatch)};
+    return {waypointsActions: bindActionCreators(waypointsActions, dispatch), uiActions: bindActionCreators(uiActions, dispatch)};
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(MenuRight);
