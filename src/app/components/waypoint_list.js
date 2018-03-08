@@ -14,6 +14,7 @@ const WaypointList = (props) => {
                     waypoint={waypoint} 
                     startChangeWaypointName={props.uiActions.startChangeWaypointName} 
                     startDeleteWaypoint={props.uiActions.startDeleteWaypoint}
+                    startShowModal={props.modalActions.startShowModal}
                 />
             )
         } else {
