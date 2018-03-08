@@ -16,7 +16,18 @@ ReactDOM.render(
 );
 
 
+// REDUX:
 // List of Waypoints
-// List of Searched Waypoints
+// List of Searched Waypoints / Presentational List of Waypoints
 // Currently Selected Waypoint
-// Search Term
+
+// REACT LOCAL:
+// Search Term 
+// Add Waypoint Enabled
+// Import Waypoints Enabled
+// Export Waypoints Enabled
+// Clear Waypoints Enabled
+// Edit Waypoint Name Enabled
+// Delete Waypoint Enabled
+// Add Waypoint To Favorites Enabled
+// Show Modal (one for Clear Waypoints and one for Delete Waypoint)
