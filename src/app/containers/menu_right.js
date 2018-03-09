@@ -28,8 +28,6 @@ class MenuRight extends Component {
     }
 
     render() {
-        console.log('menu right')   // TO DO... wykasowac!
-
         const onSearchTermChanged = _.debounce(searchTerm => {
             this.onSearchTermChanged(searchTerm);
         }, 300);
