@@ -4,6 +4,7 @@ import {bindActionCreators} from 'redux';
 import _ from 'lodash';
 import * as waypointsActions from '../actions/waypoints_actions';
 import * as uiActions from '../actions/ui_actions';
+import * as modalActions from '../actions/modal_actions';
 import SearchBar from '../components/search_bar';
 import WaypointList from '../components/waypoint_list';
 
@@ -27,8 +28,6 @@ class MenuRight extends Component {
     }
 
     render() {
-        console.log('menu right')   // TO DO... wykasowac!
-
         const onSearchTermChanged = _.debounce(searchTerm => {
             this.onSearchTermChanged(searchTerm);
         }, 300);
@@ -51,6 +50,7 @@ class MenuRight extends Component {
                         activeWaypoint={this.props.activeWaypoint} 
                         waypointsActions={this.props.waypointsActions} 
                         uiActions={this.props.uiActions}
+                        modalActions={this.props.modalActions}
                     />
                 </div>
             </div>
@@ -66,7 +66,11 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-    return {waypointsActions: bindActionCreators(waypointsActions, dispatch), uiActions: bindActionCreators(uiActions, dispatch)};
+    return {
+        waypointsActions: bindActionCreators(waypointsActions, dispatch), 
+        uiActions: bindActionCreators(uiActions, dispatch),
+        modalActions: bindActionCreators(modalActions, dispatch)
+    };
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(MenuRight);

@@ -1,4 +1,5 @@
 import React, {Component} from 'react';
+import {DELETE_WAYPOINT_MODAL_TYPE} from './modal';
 
 class WaypointListItemActive extends Component {
     constructor(props) {
@@ -37,7 +38,7 @@ class WaypointListItemActive extends Component {
                     <label onClick={() => {this.startEditingWaypointName()}} className="btn btn-secondary" type="button">
                         <i className="fa fa-pencil-square-o" aria-hidden="true"></i>
                     </label>
-                    <label onClick={() => {this.props.startDeleteWaypoint(this.props.waypoint.waypointId)}} className="btn btn-secondary" type="button">
+                    <label onClick={() => {this.props.startShowModal(DELETE_WAYPOINT_MODAL_TYPE, {callback: this.props.startDeleteWaypoint, callbackData: [this.props.waypoint.waypointId]})}} className="btn btn-secondary" type="button">
                         <i className="fa fa-trash-o" aria-hidden="true"></i>
                     </label>
                     <label className="btn btn-secondary" type="button">
@@ -49,4 +50,7 @@ class WaypointListItemActive extends Component {
     }
 }
 
-export default WaypointListItemActive;
+export default WaypointListItemActive;  
+
+
+
